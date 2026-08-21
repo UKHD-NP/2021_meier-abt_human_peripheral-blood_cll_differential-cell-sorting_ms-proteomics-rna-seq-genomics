@@ -62,8 +62,14 @@ the next reader needs to know it was looked at.
 | Published analysis code and Rmarkdown workflows | no | n/a | Code, not data. URLs transcribed from the article's data-sharing statement and left UNVERIFIED |
 | PRIDE Aspera transfer endpoints | no | n/a | An alternative transport for the same bytes, not a separate source. `DOWNLOAD.sh` uses HTTPS only, so the manifest records only HTTPS URLs |
 
-Depths actually downloaded so far: none, on no date. Everything remains planned
-— every manifest row is `PENDING` and `./DOWNLOAD.sh <depth>` will fetch it.
+Depths actually downloaded so far: `default` (and therefore `supplementary`,
+which resolves to the same 7 files), on 2026-08-20. `raw` remains planned — its
+187 rows are `PENDING` and `./DOWNLOAD.sh raw` will fetch them, 583.9 GiB at the
+archive's observed ~1.8 MB/s.
+
+One `raw`-depth file, `PXD022216/200723_CLL_library_direct.tsv`, is physically on
+disk from an earlier depth assignment but is not pinned; see the integrity
+record.
 
 ## File descriptions
 
@@ -73,28 +79,30 @@ whose name already says what it is gets no row here.
 | Path | Description | Description source |
 | --- | --- | --- |
 | `PXD022216/fmeierab_T190525_CLL_diaPASEF_*.d.zip` | Zipped Bruker `.d` acquisition folders, timsTOF Pro, standard diaPASEF. 50 runs, numbered 01–50 contiguously with a trailing four-digit run id. Primary measurements of this deposit | PRIDE file category "Associated raw file URI"; acquisition mode from the PXD022216 sample-processing protocol and the article Methods |
-| `PXD022216/200723_CLL_library_direct.tsv` | Spectronaut spectral library exported for the direct (DIA-only) library used to search this deposit | PRIDE file category "Other type file URI"; library construction described in the PXD022216 data-processing protocol |
-| `PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv` | Spectronaut peptide/precursor-level report, long format: one row per precursor per run, carrying protein-group identifiers alongside the precursor quantity | PRIDE file category "Search engine output file URI"; Spectronaut export described in the PXD022216 data-processing protocol |
-| `PXD022216/20200727_104510_200725_cll_diaPASEF_direct_Report_Protein_long.tsv` | Spectronaut protein-level report, long format, companion to the precursor report above | PRIDE file category "Search engine output file URI" |
+| `PXD022216/200723_CLL_library_direct.tsv` | Spectronaut spectral library exported for the direct (DIA-only) library used to search this deposit: a fragment-ion assay list, 35 columns, tab-separated, one row per fragment, no sample axis. Every row names `Database = sp` and `FASTAName = uniprot_sprot_2020-01-01_HUMAN`, independently confirming the search-database version the PRIDE record states. Counts in README.md. At `raw` depth, and on disk but unpinned — see the integrity record | PRIDE file category "Other type file URI"; library construction from the PXD022216 data-processing protocol; `derived:` column values and counts read from the file on disk |
+| `PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv` | Spectronaut precursor-level report, long format. 13 columns, tab-separated, CRLF, 2 188 036 data rows: run name and replicate index, protein-group accessions/descriptions/names/coverage, protein-group q-value and quantity, precursor id, precursor q-value and total quantity. Holds exactly one row per observed cell and no null token, so unquantified precursors are absent rather than `NaN`. Its 50 distinct run names match the 50 `.d.zip` stems exactly. Shapes and completeness in README.md | PRIDE file category "Search engine output file URI"; `derived:` header row and full-file counts read from the downloaded file |
+| `PXD022216/20200727_104510_200725_cll_diaPASEF_direct_Report_Protein_long.tsv` | Spectronaut protein-level report, long format, companion to the precursor report above. 10 columns, tab-separated, CRLF. Rectangular over 50 runs x 5 199 protein groups with `NaN` for unquantified cells, but it carries a second, all-`NaN` row for most cells; the duplicate never conflicts with the informative one | PRIDE file category "Search engine output file URI"; `derived:` matrix shape and duplicate structure counted from the downloaded file |
 | `PXD022216/20200727_105729_200725_cll_diaPASEF_direct.sne` | Spectronaut session archive for the direct-library search of this deposit: the analysis workspace, coupled to the Spectronaut release that wrote it (v14.4), not a portable results table. Its export timestamp places it in the same batch as the two long-format reports — `20200727_103309`, `20200727_104510`, `20200727_105729`, all carrying the `200725_cll_diaPASEF_direct` analysis name | PRIDE file category "Other type file URI"; export batch inferred from the filename timestamps; that `.sne` is Spectronaut's session format is general knowledge about the format, not a statement either PRIDE record makes |
-| `PXD022216/Annotation_file_timsTOF.txt` | Experimental-design annotation: the upstream mapping from timsTOF MS run to patient sample | PRIDE file category "Experimental design file URI" |
-| `PXD022198/20191016_0??_S*_CLL_*.raw` | Thermo Orbitrap Fusion Lumos raw acquisitions, acquisition batch dated 2019-10-16, sample runs carrying an `S`-prefixed internal specimen id and a `CLL_<n>` index; 5 of the 49 also carry a `_rep` suffix | PRIDE file category "Associated raw file URI"; filename structure observed in the deposit listing |
-| `PXD022198/20191016_0?_L?*.raw` | Thermo Orbitrap Fusion Lumos raw acquisitions from the same 2019-10-16 batch whose names carry `L1`–`L6` instead of a specimen id. UNVERIFIED: neither PRIDE record states what `L` denotes | PRIDE file category "Associated raw file URI"; filename structure observed in the deposit listing |
-| `PXD022198/20201112_*_CLL_screen2_[0-9]*_Diseased.raw` | Lumos raw acquisitions, batch dated 2020-11-12, `screen2` sample runs with a numeric sample index | PRIDE file category "Associated raw file URI"; filename structure observed in the deposit listing |
-| `PXD022198/20201112_*_CLL_screen2_Pool*_Diseased.raw` | Lumos raw acquisitions from the same 2020-11-12 batch whose names carry `Pool1`–`Pool6`. UNVERIFIED: neither PRIDE record states what is pooled | PRIDE file category "Associated raw file URI"; filename structure observed in the deposit listing |
-| `PXD022198/20210107_*_CLL_CD19selected_[0-9]*_Diseased.raw` | Lumos raw acquisitions, batch dated 2021-01-07, CD19-selected sample runs with a numeric sample index | PRIDE file category "Associated raw file URI"; CD19 selection described in the PXD022198 sample-processing protocol and the article Methods |
-| `PXD022198/20210107_*_CLL_CD19selected_Pool*.raw` | Lumos raw acquisitions from the same 2021-01-07 CD19-selected batch whose names carry `Pool1`–`Pool6`. Same UNVERIFIED caveat on `Pool` as above. **`20210107_003_S281243_CLL_CD19selected_Pool6.raw` is defective upstream** — see the integrity record below | PRIDE file category "Associated raw file URI"; filename structure observed in the deposit listing |
-| `PXD022198/20201112_p3254_o23219_CLLsample_library_ProteinQuant_Report.csv` | Spectronaut protein-quantification report for the CLL-sample library | PRIDE file category "Search engine output file URI" |
-| `PXD022198/20201207_p3254_o20368_hybrid_library_min2proteotypicPeptides_ProteinQuant_normalReport.csv` | Spectronaut protein-quantification report for the hybrid (DDA+DIA) library, restricted to proteins with at least two proteotypic peptides — the quantification rule stated in the deposit's data-processing protocol. The `normalReport` element of the name marks it as Spectronaut's normalised export | PRIDE file category "Search engine output file URI"; the ≥2-proteotypic-peptide rule from the PXD022198 data-processing protocol |
-| `PXD022198/20210117_p3254_o23722_CD19selected_Library_ProteinQuant_Report.csv` | Spectronaut protein-quantification report for the CD19-selected library | PRIDE file category "Search engine output file URI" |
-| `PXD022198/Annotation_file.csv` | Experimental-design annotation: the upstream mapping from Lumos MS run to patient sample | PRIDE file category "Other type file URI"; role inferred from its name and from the equivalent file in PXD022216, which PRIDE labels "Experimental design file URI" |
+| `PXD022216/Annotation_file_timsTOF.txt` | Experimental-design annotation for the timsTOF deposit. Tab-separated, CRLF, 14 columns, 50 data rows whose `File name` values match the 50 `.d.zip` stems exactly: File name, Patient ID, Pseudonym, Sample ID, Diagnosis from tumorbank, Gender, IGHV.status, trisomy12, DDX3X, NOTCH1, SF3B1, del11q, Leukocyte count, treatStatus. 50 distinct Patient IDs, Sample IDs and pseudonyms — no technical replicates. Unlike the PXD022198 annotation its genetic columns are sparse: blank cells, not `NA`, in 42–45 of 50 rows for DDX3X, NOTCH1, SF3B1 and del11q. All 50 patients also appear in PXD022198 | PRIDE file category "Experimental design file URI"; `derived:` all column and row facts read from the downloaded file |
+| `PXD022198/20191016_0??_S*_CLL_*.raw` | Lumos raw acquisitions of the 49 **batch 1** patient samples — main cohort, thawed mononuclear cells. All 49 appear in the "Exploratory cohort" table of the annotation file with `Batch = batch1`, each against a distinct Patient ID and Sample ID; 5 carry a `_rep` suffix in the run name, which the annotation shows is not a replicate of another deposited run | PRIDE file category "Associated raw file URI"; `derived:` first section of the downloaded annotation file; cell preparation from the article Methods |
+| `PXD022198/20191016_0?_L?*.raw` | Spectral-library runs, not patient samples: `20191016_02_L1_rep` and `_03_L2` through `_08_L6`. Named verbatim in the "Library files" table of `PXD022198/Annotation_file.csv`, and absent from all three quantification reports | PRIDE file category "Associated raw file URI"; `derived:` third section of the downloaded annotation file |
+| `PXD022198/20201112_*_CLL_screen2_[0-9]*_Diseased.raw` | Lumos raw acquisitions of the 26 **batch 3** patient samples — the article's "additional cohort", FACS-sorted CD19+ CD5+ cells. All 26 appear in the "Additional cohort" table of the annotation file, each against a distinct Patient ID and Sample ID | PRIDE file category "Associated raw file URI"; `derived:` second section of the downloaded annotation file; cell preparation from the article Methods |
+| `PXD022198/20201112_*_CLL_screen2_Pool*_Diseased.raw` | Spectral-library runs for batch 3, `Pool1`–`Pool6`, not patient samples. Named verbatim in the "Library files" table of the annotation file and absent from every quantification report | PRIDE file category "Associated raw file URI"; `derived:` third section of the downloaded annotation file |
+| `PXD022198/20210107_*_CLL_CD19selected_[0-9]*_Diseased.raw` | Lumos raw acquisitions of the 42 **batch 2** patient samples — main cohort, CD19+ cells selected by MACS. All 42 appear in the "Exploratory cohort" table of the annotation file with `Batch = batch2`, each against a distinct Patient ID and Sample ID | PRIDE file category "Associated raw file URI"; `derived:` first section of the downloaded annotation file; CD19 selection from the PXD022198 sample-processing protocol and the article Methods |
+| `PXD022198/20210107_*_CLL_CD19selected_Pool*.raw` | Spectral-library runs for batch 2, `Pool1`–`Pool6`, not patient samples; named verbatim in the "Library files" table of the annotation file. **`20210107_003_S281243_CLL_CD19selected_Pool6.raw` is defective upstream** — see the integrity record below | PRIDE file category "Associated raw file URI"; `derived:` third section of the downloaded annotation file |
+| `PXD022198/20201112_p3254_o23219_CLLsample_library_ProteinQuant_Report.csv` | Spectronaut protein-quantification report covering **batch 3** only: 48 `…screen2…` runs, of which 26 are deposited as raw files. Comma-separated, CRLF, five columns, `NaN` for unquantified cells, and non-rectangular. Its protein grouping differs from the other two reports: 3 477 groups expand to 5 815 accessions. Shape and completeness in README.md | PRIDE file category "Search engine output file URI"; `derived:` run membership and matrix shape counted from the downloaded file |
+| `PXD022198/20201207_p3254_o20368_hybrid_library_min2proteotypicPeptides_ProteinQuant_normalReport.csv` | Spectronaut protein-quantification report for the hybrid (DDA+DIA) library, restricted to proteins with at least two proteotypic peptides — the quantification rule stated in the deposit's data-processing protocol. The `normalReport` element of the name marks it as Spectronaut's normalised export, the only one of the five quantitative files whose normalisation state is recorded anywhere. Covers **batch 1** only: 50 `20191016_*` runs, of which 49 are deposited as raw files | PRIDE file category "Search engine output file URI"; the ≥2-proteotypic-peptide rule from the PXD022198 data-processing protocol; `derived:` run membership and matrix shape counted from the downloaded file |
+| `PXD022198/20210117_p3254_o23722_CD19selected_Library_ProteinQuant_Report.csv` | Spectronaut protein-quantification report for the CD19-selected library, covering **batch 2** only: 53 `…CD19selected…` runs, of which 42 are deposited as raw files. Shape and completeness in README.md | PRIDE file category "Search engine output file URI"; `derived:` run membership and matrix shape counted from the downloaded file |
+| `PXD022198/Annotation_file.csv` | Experimental-design annotation, and the key to the whole deposit. **Semicolon**-separated despite the `.csv` name, CRLF, and sectioned rather than rectangular: three stacked tables — "Exploratory cohort" (91 sample runs, batch1 = 49 and batch2 = 42), "Additional cohort" (26 sample runs, batch3), and "Library files" (18 runs, no metadata columns) — followed by the line "Only files that met the quality criteria for inclusion in the analysis were uploaded." The two cohort tables carry, per run: Patient ID, Sample ID, Diagnosis, pseudonymised ID, batch, sex, age, leukocyte count, overall survival (years), died or not, time to treatment (years), treated after sampling, IGHV status, and 0/1/`NA` calls for trisomy12, trisomy19, del13q, del11q, del17p, SF3B1, TP53, NOTCH1, ATM, BRAF, EGR2, MED12, DDX3X and U1. Its 135 run names account for exactly the 135 deposited `.raw` files, with none left over | PRIDE file category "Other type file URI"; `derived:` structure and every count read from the downloaded file |
 
 The description source is either a named upstream document, or
 `derived: <what was inspected>` for a description read off the file itself after
 download — a header row, an archive listing, a column dictionary inside the file.
 Keep the two distinct: what the publisher says a file is and what the bytes show
-it to be are different claims, and they occasionally disagree. At this baseline
-every description is upstream-sourced, because nothing has been downloaded.
+it to be are different claims, and they occasionally disagree. Rows marked
+`derived:` were completed after the `default`-depth download; the `raw`-depth
+rows other than the spectral library remain upstream-sourced only, because those
+files have not been retrieved.
 
 ## Integrity record
 
@@ -154,11 +162,25 @@ PRIDE helpdesk.
 **The local pins.** The `sha256` column is a local drift pin and is a different
 claim from the upstream SHA-1: it proves only that a file has not changed since
 it was hashed here, and proves nothing about whether the correct file was
-received. At this baseline all 194 rows are `PENDING` in `bytes`, `sha256` and
-`pinned_date` — the three move as a unit, written together by `DOWNLOAD.sh`
-after a file passes its tier gate. That is the only manifest mutation the script
-performs outside `--refresh-manifest`, it touches only those three columns, and
-it never turns a populated pin into a different one without `--force`.
+received. 7 of 194 rows are pinned — the `default` depth, on 2026-08-20. The
+three fields move as a unit, written together by `DOWNLOAD.sh` after a file
+passes its tier gate. That is the only manifest mutation the script performs
+outside `--refresh-manifest`, it touches only those three columns, and it never
+turns a populated pin into a different one without `--force`. All seven files
+were already on disk when the pins were taken, so each was verified against its
+publisher SHA-1 and pinned without any transfer; none was rejected.
+
+**One row is UNPINNED, and it needs a decision rather than a fix.**
+`PXD022216/200723_CLL_library_direct.tsv` is on disk and matches its publisher
+SHA-1, but it sits at `raw` depth, so the `default`-depth run left its row
+`PENDING`. `--verify-only raw` therefore reports it `UNPINNED`: bytes present
+that the manifest has never recorded. The cause is benign and documented — the
+file was fetched while it was still assigned to `default`, before the depth rules
+placed spectral libraries in the bulk tier — but the state is a genuine
+provenance gap, not a cosmetic one, and the two ways out both belong to the
+maintainer: `./DOWNLOAD.sh raw` pins it but starts the full 583.9 GiB retrieval,
+and deleting the file returns its row to `NOT_YET_DOWNLOADED` at the cost of a
+later ~3-minute re-fetch. Neither has been done.
 
 `MANIFEST.tsv` is not self-verifying. Its integrity rests on three things
 outside it: version control history, the saved upstream artifacts under
@@ -171,7 +193,7 @@ provide.
 
 | Field | Value |
 | --- | --- |
-| Date retrieved | Metadata and upstream checksums: 2026-08-20. Data files: none retrieved at this baseline |
+| Date retrieved | Metadata and upstream checksums: 2026-08-20. Data files: the 7 `default`-depth files pinned 2026-08-20; all were already on disk, having been fetched earlier the same day, and were verified against their publisher SHA-1 rather than re-transferred. The 187 `raw`-depth files are not retrieved |
 | Retrieved by | iandirk.fichtner@dkfz-heidelberg.de |
 | `curl` version | curl 8.11.1 (x86_64-redhat-linux-gnu), libcurl/8.11.1 OpenSSL/3.2.6, release date 2024-12-11 |
 | `sha256sum` version | sha256sum (GNU coreutils) 9.6 |
@@ -192,10 +214,14 @@ rather than to the publisher of record.
 
 ## Not downloaded
 
-- **Everything.** At this baseline no data file has been retrieved; all 194
-  manifest rows are `PENDING`. `./DOWNLOAD.sh` fetches the 7 `default`-depth
-  files (552.2 MiB); `./DOWNLOAD.sh raw` fetches all 194 (583.9 GiB), which at
-  the archive's observed ~1.8 MB/s is a multi-day transfer.
+- **Depth `raw`: 187 files, 583.3 GiB.** The 185 raw MS acquisitions
+  (50 `.d.zip` from PXD022216, 135 `.raw` from PXD022198), the exported
+  Spectronaut spectral library, and the 24.2 GiB `.sne` session archive. Fetch
+  with `./DOWNLOAD.sh raw`; at the archive's observed ~1.8 MB/s that is a
+  multi-day transfer. A first attempt on the `.sne` was cancelled after 1.2 GiB
+  of 24.2 GiB; `DOWNLOAD.sh` removed its temporary file on exit and left no
+  partial or stub behind, and the file was then reclassified from `default` to
+  `raw` along with the spectral library.
 - **The article's supplementary tables and figures.** Analysis results, not
   primary data, and deliberately out of scope. They are on the *Blood* article
   page at
@@ -214,31 +240,65 @@ rather than to the publisher of record.
 
 ## Unverified
 
-- **Technical replicate design** — sought in both PRIDE project records
-  (`sampleProcessingProtocol`, `dataProcessingProtocol`, `additionalAttributes`)
-  and in the article Methods and Figure 1 legend. No technical-replicate count
-  is stated anywhere. Options: (a) download `default` depth and read the design
-  off the two annotation files; (b) ask the corresponding authors; (c) treat
-  every run as independent until the annotation says otherwise.
-- **Meaning of the `L1`–`L6` and `Pool1`–`Pool6` run names in PXD022198** —
-  sought in the PRIDE project description and protocols and in the article
-  Methods. Not documented. Options: (a) read the annotation file at `default`
-  depth; (b) inspect the acquisition method inside one such `.raw` after a `raw`
-  download; (c) ask the submitter.
-- **Missing-value convention, and whether zero means "not quantified"** — sought
-  in both PRIDE data-processing protocols and in the article Methods. Not
-  stated. Options: (a) establish it from the files once downloaded and record it
-  beside the statistics; (b) report completeness both ways with the ambiguity
-  named; (c) ask the submitter.
-- **Normalization state of the deposited Spectronaut exports** — one file names
-  it in its own filename; for the rest, neither record states whether
-  Spectronaut's internal normalisation was enabled. Options: (a) inspect the
-  Spectronaut settings inside the `.sne` session archive at `raw` depth;
-  (b) compare per-run intensity distributions once the reports are downloaded;
-  (c) ask the submitter.
-- **Encoding, delimiter and line terminator of every deposited file** — not
-  stated in either PRIDE record. Options: (a) observe them after download and
-  record them; (b) leave unstated; (c) ask the submitter.
+**Resolved on 2026-08-21 from the `default`-depth files**, recorded here so the
+trail from question to answer stays visible:
+
+- *Technical replicate design* — **resolved.** `PXD022198/Annotation_file.csv`
+  lists 117 sample runs against 117 distinct Patient IDs and 117 distinct Sample
+  IDs; `PXD022216/Annotation_file_timsTOF.txt` lists 50 runs against 50 distinct
+  Patient IDs, Sample IDs and pseudonyms. No technical replicates among the
+  deposited sample runs, and the `_rep` suffix is not a replicate marker.
+- *Meaning of the `L1`–`L6` and `Pool1`–`Pool6` run names* — **resolved.** The
+  annotation file's third table is headed "Library files" and names exactly those
+  18 runs. They are spectral-library acquisitions, not patient samples, and
+  appear in none of the three quantification reports. 117 samples + 18 library
+  runs = the 135 deposited `.raw` files, with nothing left over.
+- *Missing-value convention, and whether zero means "not quantified"* —
+  **resolved.** `NaN` in four of the five quantitative files; no null token at
+  all in the precursor report, where a missing cell is an absent row; no empty
+  field anywhere; and no value equal to zero in any quantity column, so the zero
+  ambiguity cannot affect any completeness figure. Neither PRIDE record states
+  any of this — it was counted.
+- *Encoding, delimiter and line terminator* — **resolved for the 7 downloaded
+  files** (see README.md). Still unobserved for the 187 `raw`-depth files.
+- *Search database version for PXD022216* — **resolved, and it was not on the
+  original list.** All 786 266 rows of the exported spectral library name
+  `FASTAName = uniprot_sprot_2020-01-01_HUMAN` and `Database = sp`, confirming
+  from the data the version the PRIDE record states.
+- *Batch-to-filename mapping* — **resolved.** batch1 = the 49 `20191016_*` runs,
+  batch2 = the 42 `…CD19selected…` runs, batch3 = the 26 `…screen2…` runs.
+
+Still open:
+
+- **Normalization state of four of the five quantitative files** — one is settled
+  by its own filename (`…ProteinQuant_normalReport.csv` is Spectronaut's
+  normalised export). For the PXD022216 precursor and protein reports and the
+  other two PXD022198 reports, neither PRIDE record states whether Spectronaut's
+  internal normalisation was enabled, and the exports carry no column recording
+  it. Options: (a) fetch the `.sne` session archive at `raw` depth and read its
+  Spectronaut settings; (b) compare per-run intensity distributions for the
+  signature of normalisation; (c) ask the submitter.
+- **Why the deposited protein report does not reproduce the paper's 4 977
+  proteins** — the article states that filtering to proteins with fewer than 50%
+  missing values across the 49 retained timsTOF samples left 4 977 proteins.
+  Applying that filter to the deposited protein report gives 4 944 when the run
+  with the fewest quantified protein groups is dropped, and every one of the 50
+  possible single-run exclusions lands between 4 932 and 4 946. Options: (a) read
+  the published analysis code and record which table it starts from; (b) re-derive
+  protein quantities from the precursor report and re-test; (c) leave the
+  discrepancy recorded and use the deposited table as it stands.
+- **Whether the 34 runs quantified but never deposited are recoverable** — the
+  three PXD022198 reports quantify 151 distinct runs; only 117 exist as `.raw`
+  files here, and the annotation file's closing line says only files meeting the
+  quality criteria were uploaded. Options: (a) accept the 117 and drop the other
+  34 columns; (b) ask the submitter whether the excluded acquisitions still
+  exist; (c) analyse the reports at full width, documenting that 34 columns have
+  no raw provenance in this deposit.
+- **Encoding and contents of the 187 `raw`-depth files** — not downloaded, so
+  nothing about their bytes has been observed. Options: (a) `./DOWNLOAD.sh raw`;
+  (b) fetch a single file by editing a one-row manifest copy and pointing
+  `--manifest` at it; (c) leave them unobserved, which is the current scoping
+  decision.
 - **Whether PRIDE considers the 4096-byte `Pool6` file a known defect** — sought
   in the deposit's revision history and changelog entries, which mention only
   metadata updates. Options: (a) report it to `pride-support@ebi.ac.uk` and
@@ -258,4 +318,5 @@ One row per change to `MANIFEST.tsv`, each tied to the commit that made it.
 
 | Date | Commit | Change | Reason |
 | --- | --- | --- | --- |
-| 2026-08-21 | baseline | Created with 194 Tier A rows covering PXD022216 (55) and PXD022198 (139), all in the planned state: `bytes`, `sha256` and `pinned_date` all `PENDING`. Depths assigned: 7 `default`, 0 `supplementary`, 187 `raw`. Upstream SHA-1 values transcribed from three PRIDE v3 file-metadata API pages saved under `provenance/upstream/` | Initial documentation of the deposits, committed before any download so that the plan and the observation are separately attributable |
+| 2026-08-21 | `a92c1f6` | Created with 194 Tier A rows covering PXD022216 (55) and PXD022198 (139), all in the planned state: `bytes`, `sha256` and `pinned_date` all `PENDING`. Depths assigned: 7 `default`, 0 `supplementary`, 187 `raw`. Upstream SHA-1 values transcribed from three PRIDE v3 file-metadata API pages saved under `provenance/upstream/` | Initial documentation of the deposits, committed before any download so that the plan and the observation are separately attributable |
+| 2026-08-21 | `366e5d3` | `bytes`, `sha256` and `pinned_date` written for the 7 `default`-depth rows. No other field changed on any row | The `default`-depth files were verified against their publisher SHA-1, so their local observations became recordable |

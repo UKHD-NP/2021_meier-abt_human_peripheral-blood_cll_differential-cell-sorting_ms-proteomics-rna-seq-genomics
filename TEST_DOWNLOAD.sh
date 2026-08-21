@@ -129,7 +129,14 @@ g "no pipe from curl/wget into an interpreter"   '(curl|wget)[^|]*\|[[:space:]]*
 g "no rm -rf on an unquoted or bare-variable path" 'rm[[:space:]]+-[rR]f?[fF]?[[:space:]]+\$?[A-Za-z0-9_{]'
 g "no embedded credential literal"               '(password|passwd|secret|api_?key|token)[[:space:]]*=[[:space:]]*["'"'"'][^"'"'"']'
 g "no --include-optional (not in the contract)"  '\-\-include-optional'
-g "the script never invokes git"                 '(^|[^[:alnum:]_-])git[[:space:]]+(add|commit|init|push)'
+# DOWNLOAD.sh is required to *print* a suggested git command; it must never run
+# one. Filter out the printf/echo lines before looking for an invocation.
+if grep -vE 'printf|echo' "$DL" | grep -Eq '(^|[;&|]|\$\()[[:space:]]*git[[:space:]]+(add|commit|init|push|tag)'; then
+  bad "DOWNLOAD.sh invokes git — committing is the human's decision"
+  grep -vE 'printf|echo' "$DL" | grep -En '(^|[;&|]|\$\()[[:space:]]*git[[:space:]]+(add|commit|init|push|tag)' | sed 's/^/      /'
+else
+  ok "DOWNLOAD.sh never runs git (it only prints the suggested command)"
+fi
 
 sect "no-hashes invariant"
 if grep -Eq '\b[0-9a-fA-F]{32}\b|\b[0-9a-fA-F]{40}\b|\b[0-9a-fA-F]{64}\b' "$DL"; then
