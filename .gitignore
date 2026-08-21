@@ -14,5 +14,9 @@ SHA256SUMS
 .MANIFEST.*
 *.tmp
 
+# Derived intermediate for the peptidoform / stripped-peptide counts; the
+# command that regenerates it is recorded in README.md's statistics section.
+/precursor_levels.tsv
+
 # Tooling, not part of this dataset's record.
 /.skills/

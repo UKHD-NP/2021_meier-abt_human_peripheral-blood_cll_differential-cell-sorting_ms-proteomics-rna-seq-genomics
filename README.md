@@ -131,6 +131,8 @@ non-missing is the number of observed pairs.
 | File | Level | Samples | Feature rows | Unique features | Cells | Completeness | Unique proteins |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv` | precursor | 50 | 2 188 036 | 59 484 | 2 974 200 | 73.57% | 5 196 |
+| `PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv` | peptidoform | 50 | 1 939 621 | 51 419 | 2 570 950 | 75.44% | 5 196 |
+| `PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv` | peptide (stripped) | 50 | 1 904 963 | 49 691 | 2 484 550 | 76.67% | 5 196 |
 | `PXD022216/20200727_104510_200725_cll_diaPASEF_direct_Report_Protein_long.tsv` | protein | 50 | 396 500 | 5 199 | 259 950 | 92.58% | 5 199 (the feature itself) |
 | `PXD022198/20201207_p3254_o20368_hybrid_library_min2proteotypicPeptides_ProteinQuant_normalReport.csv` | protein | 50 | 209 543 | 4 452 | 222 600 | 76.39% | 4 452 (the feature itself) |
 | `PXD022198/20210117_p3254_o23722_CD19selected_Library_ProteinQuant_Report.csv` | protein | 53 | 255 533 | 5 113 | 270 989 | 76.29% | 5 113 (the feature itself) |
@@ -145,6 +147,36 @@ groups into individual accessions gives different numbers, computed separately:
 protein-level files in the order above. The batch-3 file is the outlier — 3 477
 groups expand to 5 815 accessions — so protein-group identifiers are not
 comparable across the three PXD022198 reports as strings.
+
+**The precursor file appears three times, once per feature level.** It is
+reported at the level its own identifier carries (precursor) and at the two
+levels that identifier collapses to:
+
+| Level | Feature identity | Derived from `EG.PrecursorId` by |
+| --- | --- | --- |
+| precursor | modified sequence + charge | used as-is, e.g. `_HTGSGILSM[Oxidation (M)]ANAGPNTNGSQFFIC[Carbamidomethyl (C)]TAK_.3` |
+| peptidoform | modified sequence, charge-agnostic | dropping the `.<charge>` suffix |
+| peptide (stripped) | bare amino-acid sequence | dropping the charge suffix, the `[...]` modification blocks and the flanking underscores |
+
+Collapsing merges rows, so "Feature rows" is the number of **non-empty cells
+after the collapse**, not the source row count: all three levels are computed
+from the same 2 188 036 source rows, of which 248 415 land on a
+(run, peptidoform) cell already occupied and 283 073 on an already-occupied
+(run, stripped sequence) cell. Completeness therefore uses distinct
+(run, feature) pairs, not row counts — the bundled counter says so explicitly in
+a `NOTE` line for both collapsed levels. Completeness *rises* as the level
+coarsens (73.57% → 75.44% → 76.67%) because merging charge states and
+modification states fills cells that were empty for one precursor but observed
+for a sibling of the same peptide.
+
+A cell counts as empty when the row is absent, when its value is a missing
+token (`NaN`, `NA`, `null`, `Filtered`, empty), or when its value is zero. In
+this file only the first of those ever occurs: it holds no missing token and no
+zero anywhere, so the three definitions coincide here and the completeness
+figures are insensitive to which is used.
+
+"Unique proteins" is 5 196 at all three levels, as it must be — the same file
+and the same `PG.ProteinAccessions` column, only the feature axis changes.
 
 Feature rows differs from unique features x samples in every file, and the gap
 is a finding rather than rounding:
@@ -184,6 +216,30 @@ python3 .skills/dataset-documentation/scripts/matrix_stats.py \
   --layout long --run-col 'R.FileName' --value-col 'EG.TotalQuantity (Settings)' \
   --zero-is-missing \
   PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv
+
+# Peptidoform and stripped-peptide levels: the file carries no such column, so
+# derive both from EG.PrecursorId first, then count the derived columns. Running
+# the precursor level against this derived file reproduces the row above
+# exactly, which is what shows the derivation changed nothing else.
+awk -F'\t' -v OFS='\t' '
+  NR==1 { print "R.FileName","EG.PrecursorId","Peptidoform","StrippedPeptide","PG.ProteinAccessions","Quantity"; next }
+  {
+    q=$13; gsub(/\r/,"",q)                      # the file is CRLF
+    pf=$11; sub(/\.[0-9]+$/,"",pf)              # peptidoform: drop the charge
+    sp=pf;  gsub(/\[[^]]*\]/,"",sp); gsub(/_/,"",sp)   # stripped: drop mods and underscores
+    print $2,$11,pf,sp,$4,q
+  }' PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv \
+  > precursor_levels.tsv
+
+python3 .skills/dataset-documentation/scripts/matrix_stats.py \
+  --level peptidoform --feature-col 'Peptidoform' --protein-col 'PG.ProteinAccessions' \
+  --layout long --run-col 'R.FileName' --value-col 'Quantity' --zero-is-missing \
+  precursor_levels.tsv
+
+python3 .skills/dataset-documentation/scripts/matrix_stats.py \
+  --level peptide --feature-col 'StrippedPeptide' --protein-col 'PG.ProteinAccessions' \
+  --layout long --run-col 'R.FileName' --value-col 'Quantity' --zero-is-missing \
+  precursor_levels.tsv
 
 python3 .skills/dataset-documentation/scripts/matrix_stats.py \
   --level protein --feature-col 'PG.ProteinAccessions' \
