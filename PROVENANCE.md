@@ -190,6 +190,26 @@ every read. If this chain must hold up to someone other than the maintainer,
 signed commits or a signed tag are the only anchor an in-directory file cannot
 provide.
 
+**A Merkle fingerprint of the download.** `MERKEL-TREE.json` records a Merkle
+tree over the downloaded bytes only — root
+`sha256-7cf6f3ddb1f074c20d1c79e2628aff850669f73a399abe43f31534ca27a7d0e5`,
+covering the 7 files of the `default` depth (`PXD022198`
+`sha256-9ab9b3d3…`, `PXD022216` `sha256-2df72099…`). It was built on 2026-08-21
+with `idf-utilities/tools/command-line/merkel-tree/merkel-tree.py` at commit
+`9670d708eaa349c2f947242188e60811fd37738f`; the JSON's `tool_commit` field
+carries a `-dirty` suffix because that repository had one unrelated untracked
+file at build time, not because the hashing code was modified. Documentation and
+tooling paths were excluded by `--skip` and the applied patterns are recorded in
+the file, so the tree is a statement about the data and not about this bundle.
+
+It is a *derived* artifact and deliberately not a second authority: its 7 file
+hashes were checked against the 7 pinned `sha256` values in `MANIFEST.tsv` and
+agree exactly, and if the two ever disagree the manifest is right and the tree
+is stale. It also has a different scope from the pins — it changes whenever the
+set of downloaded files changes, so fetching `supplementary` or `raw` will move
+the root hash legitimately. The command that regenerates it is recorded in
+README.md.
+
 ## Retrieval record
 
 | Field | Value |

@@ -411,12 +411,47 @@ so `git log -p MANIFEST.tsv` is the full record of when a checksum moved and
 why. The data files themselves are not versioned — the manifest and
 `DOWNLOAD.sh` are what reproduce them.
 
+**A single fingerprint for the bytes on disk.** `MERKEL-TREE.json` is a Merkle
+tree over the downloaded data — the two deposit directories and nothing else. A
+file's node hashes its bytes, a directory's node hashes its children's sorted
+hashes, so the root value covers every byte of the current download and two
+copies of this dataset can be compared with one string instead of a checksum
+list:
+
+```
+sha256-7cf6f3ddb1f074c20d1c79e2628aff850669f73a399abe43f31534ca27a7d0e5
+```
+
+This is a fingerprint of *what is currently downloaded*, not a constant of the
+dataset: it covers the 7 files of the `default` depth, and fetching a deeper
+depth will legitimately change it. `MANIFEST.tsv` remains the authority on what
+each file's bytes must be — the tree is derived, so regenerate it rather than
+edit it:
+
+```bash
+# tool: idf-utilities/tools/command-line/merkel-tree/merkel-tree.py
+# the exact tool commit that produced the hashes is recorded in the JSON's
+# tool_commit field, so the hashing logic can be checked out and re-run
+merkel-tree.py . -a sha256sum -o MERKEL-TREE.json \
+  -s '.git' -s '.gitignore' -s '.skills' -s 'provenance' \
+  -s 'README.md' -s 'PROVENANCE.md' -s 'MANIFEST.tsv' \
+  -s 'DOWNLOAD.sh' -s 'TEST_DOWNLOAD.sh' -s 'MERKEL-TREE.json'
+```
+
+The `-s` list is what confines the tree to the data: every documentation and
+tooling path in this directory is excluded by name. Two things in the JSON are
+the check that the confinement held — the `skipped` array records the patterns
+applied, and the root node's `children` must be exactly `PXD022198` and
+`PXD022216`. Its 7 file hashes were compared against the 7 pinned `sha256`
+values in `MANIFEST.tsv` and agree exactly.
+
 ## Files in this directory
 
 | File | Purpose |
 | --- | --- |
 | `PROVENANCE.md` | citation, license, per-file descriptions, integrity record |
 | `MANIFEST.tsv` | authoritative paths, sizes, checksums, and source URLs |
+| `MERKEL-TREE.json` | Merkle tree of the downloaded bytes; one root hash fingerprints the whole download |
 | `DOWNLOAD.sh` | retrieve and verify the data; `--help` for options |
 | `TEST_DOWNLOAD.sh` | check that `DOWNLOAD.sh` is correct and safe |
 | `.gitignore` | keeps the data files out of version control |

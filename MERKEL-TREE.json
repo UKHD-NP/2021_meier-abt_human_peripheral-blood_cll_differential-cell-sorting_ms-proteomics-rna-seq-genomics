@@ -1,0 +1,113 @@
+{
+  "root": ".",
+  "algorithm": "sha256sum",
+  "tool_commit": "9670d708eaa349c2f947242188e60811fd37738f-dirty",
+  "nodes": {
+    ".": {
+      "type": "dir",
+      "hash": {
+        "full": "sha256-7cf6f3ddb1f074c20d1c79e2628aff850669f73a399abe43f31534ca27a7d0e5",
+        "short": "sha256-7cf6f3d"
+      },
+      "children": [
+        "PXD022198",
+        "PXD022216"
+      ]
+    },
+    "PXD022198": {
+      "type": "dir",
+      "hash": {
+        "full": "sha256-9ab9b3d3316db209ce53eb682c788c8f3434dca4b976e916cf94a1daca140d8a",
+        "short": "sha256-9ab9b3d"
+      },
+      "children": [
+        "PXD022198/20201112_p3254_o23219_CLLsample_library_ProteinQuant_Report.csv",
+        "PXD022198/20201207_p3254_o20368_hybrid_library_min2proteotypicPeptides_ProteinQuant_normalReport.csv",
+        "PXD022198/20210117_p3254_o23722_CD19selected_Library_ProteinQuant_Report.csv",
+        "PXD022198/Annotation_file.csv"
+      ],
+      "parent": "."
+    },
+    "PXD022198/20201112_p3254_o23219_CLLsample_library_ProteinQuant_Report.csv": {
+      "type": "file",
+      "hash": {
+        "full": "sha256-76bfbf0af05292e0425d8bf03160ddfe4695923b19b8a20107b0426c473c2940",
+        "short": "sha256-76bfbf0"
+      },
+      "parent": "PXD022198"
+    },
+    "PXD022198/20201207_p3254_o20368_hybrid_library_min2proteotypicPeptides_ProteinQuant_normalReport.csv": {
+      "type": "file",
+      "hash": {
+        "full": "sha256-4cf82ff5d602fbc7f781a36f5378faaaabc6eee694723c0eb66f87f7dc21a9e3",
+        "short": "sha256-4cf82ff"
+      },
+      "parent": "PXD022198"
+    },
+    "PXD022198/20210117_p3254_o23722_CD19selected_Library_ProteinQuant_Report.csv": {
+      "type": "file",
+      "hash": {
+        "full": "sha256-df6d126498bdcf04f03238f491529ca32375564d4b3f9561c8a7ec5fe2ac8815",
+        "short": "sha256-df6d126"
+      },
+      "parent": "PXD022198"
+    },
+    "PXD022198/Annotation_file.csv": {
+      "type": "file",
+      "hash": {
+        "full": "sha256-523ec307d2f5e4e2b52283a53a8ffc945f371bd60145100e802794b300a673b6",
+        "short": "sha256-523ec30"
+      },
+      "parent": "PXD022198"
+    },
+    "PXD022216": {
+      "type": "dir",
+      "hash": {
+        "full": "sha256-2df720990e118ace9c6741f025117b613abab0f07a0ac86a210e2e68b746b574",
+        "short": "sha256-2df7209"
+      },
+      "children": [
+        "PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv",
+        "PXD022216/20200727_104510_200725_cll_diaPASEF_direct_Report_Protein_long.tsv",
+        "PXD022216/Annotation_file_timsTOF.txt"
+      ],
+      "parent": "."
+    },
+    "PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv": {
+      "type": "file",
+      "hash": {
+        "full": "sha256-c8554939315a0ca5c7e42f75f550db4e2ebc8fc45cf71a0dd97c1d11f38cb15e",
+        "short": "sha256-c855493"
+      },
+      "parent": "PXD022216"
+    },
+    "PXD022216/20200727_104510_200725_cll_diaPASEF_direct_Report_Protein_long.tsv": {
+      "type": "file",
+      "hash": {
+        "full": "sha256-cef41ad3c1b8fe77e39b9b860307bfc9c7daa0356c528cdf10ad374b0b6ad284",
+        "short": "sha256-cef41ad"
+      },
+      "parent": "PXD022216"
+    },
+    "PXD022216/Annotation_file_timsTOF.txt": {
+      "type": "file",
+      "hash": {
+        "full": "sha256-5a14b278996349afc097249eff29720f20d0e7a4d861b25492e26ef7d62ba79d",
+        "short": "sha256-5a14b27"
+      },
+      "parent": "PXD022216"
+    }
+  },
+  "skipped": [
+    ".git",
+    ".gitignore",
+    ".skills",
+    "DOWNLOAD.sh",
+    "MANIFEST.tsv",
+    "MERKEL-TREE.json",
+    "PROVENANCE.md",
+    "README.md",
+    "TEST_DOWNLOAD.sh",
+    "provenance"
+  ]
+}
