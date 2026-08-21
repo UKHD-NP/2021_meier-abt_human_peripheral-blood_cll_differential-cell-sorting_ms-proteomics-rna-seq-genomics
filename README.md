@@ -65,13 +65,9 @@ Spectronaut session archive. Third, one experimental-design annotation file per
 deposit, mapping MS run name to patient sample.
 
 Depth `default` has been retrieved and verified: all 7 files are on disk, each
-checked against its publisher SHA-1 before its pin was written. The 187
-`raw`-depth rows remain planned, with `bytes`, `sha256` and `pinned_date` all
-`PENDING`. One exception is worth knowing about: the exported spectral library
-`200723_CLL_library_direct.tsv` is physically on disk — it was fetched before
-the depth assignment moved spectral libraries to `raw` — but its row is still
-`PENDING`, so `--verify-only raw` reports it `UNPINNED`. See the Integrity
-section.
+checked against its publisher SHA-1 before its pin was written. All 187
+`raw`-depth rows are planned, with `bytes`, `sha256` and `pinned_date` all
+`PENDING`, and none of those files is held locally.
 
 Files are grouped into three download depths. `./DOWNLOAD.sh` with no argument
 fetches `default`; pass `supplementary` or `raw` to go deeper. Depth is
@@ -230,11 +226,18 @@ UniProt accessions and 5 266 gene symbols, drawn from all 50 diaPASEF runs as
 reference runs at a mean 13.19 fragments per precursor, 742 802 of the rows
 flagged proteotypic. Every one of those rows carries `Database = sp` and
 `FASTAName = uniprot_sprot_2020-01-01_HUMAN`, which confirms from the data the
-search-database version the PRIDE record states. These counts come from bytes
-that are on disk but whose manifest row is still `PENDING` — see the Integrity
-section — so they are labelled accordingly rather than presented as pinned
-observations. The 133 precursors present in the library but absent from the
-precursor report were never quantified in any run.
+search-database version the PRIDE record states. The 133 precursors present in
+the library but absent from the precursor report were never quantified in any
+run.
+
+**These library counts were computed from a copy that is no longer held.** The
+file had been fetched while spectral libraries were still assigned to `default`
+depth; once the depth rules moved them to the bulk tier it became an unpinned
+stray, and it was deleted rather than left as bytes the manifest had never
+recorded. The counts above were computed from those bytes before deletion, with
+`sha1sum` confirming they matched the publisher hash, so they are measurements
+rather than estimates — but they cannot be re-run until `./DOWNLOAD.sh raw`
+brings the file back (296 MB, about three minutes on its own).
 
 **Raw instrument files** — the 185 `.raw` and `.d.zip` acquisitions and the
 24.2 GiB `.sne` session archive — are at `raw` depth and **were not
@@ -329,15 +332,11 @@ pinned — the `default` depth, each verified against its publisher SHA-1 on
 2026-08-20 before its `bytes`/`sha256`/`pinned_date` triple was written. The
 other 187 are `PENDING`.
 
-One row is in a state that needs a decision rather than a fix:
-`PXD022216/200723_CLL_library_direct.tsv` is on disk and verifies against its
-publisher SHA-1, but it sits at `raw` depth, so a `default`-depth run does not
-pin it and `--verify-only raw` reports it `UNPINNED` — bytes the manifest has
-never recorded. It got there under an earlier depth assignment, before spectral
-libraries were classified as bulk. `./DOWNLOAD.sh raw` would pin it, at the cost
-of starting the full 583.9 GiB retrieval; deleting it would return the row to
-`NOT_YET_DOWNLOADED` and cost a 3-minute re-fetch later. Neither has been done,
-because both are the maintainer's call.
+`--verify-only` is therefore clean at every depth: 7 `OK` and 0 problems at
+`default`, and at `raw` the 187 unfetched rows report `NOT_YET_DOWNLOADED`,
+which is a match between manifest and disk rather than a failure. There is no
+file on disk that the manifest has not recorded, and no pinned row whose file is
+absent.
 
 Data files are set read-only to prevent accidental modification. To edit one
 deliberately:

@@ -67,9 +67,9 @@ which resolves to the same 7 files), on 2026-08-20. `raw` remains planned — it
 187 rows are `PENDING` and `./DOWNLOAD.sh raw` will fetch them, 583.9 GiB at the
 archive's observed ~1.8 MB/s.
 
-One `raw`-depth file, `PXD022216/200723_CLL_library_direct.tsv`, is physically on
-disk from an earlier depth assignment but is not pinned; see the integrity
-record.
+No `raw`-depth file is held locally. One of them, the exported spectral library,
+was briefly on disk under an earlier depth assignment and was deleted rather
+than left unpinned; see the integrity record.
 
 ## File descriptions
 
@@ -79,7 +79,7 @@ whose name already says what it is gets no row here.
 | Path | Description | Description source |
 | --- | --- | --- |
 | `PXD022216/fmeierab_T190525_CLL_diaPASEF_*.d.zip` | Zipped Bruker `.d` acquisition folders, timsTOF Pro, standard diaPASEF. 50 runs, numbered 01–50 contiguously with a trailing four-digit run id. Primary measurements of this deposit | PRIDE file category "Associated raw file URI"; acquisition mode from the PXD022216 sample-processing protocol and the article Methods |
-| `PXD022216/200723_CLL_library_direct.tsv` | Spectronaut spectral library exported for the direct (DIA-only) library used to search this deposit: a fragment-ion assay list, 35 columns, tab-separated, one row per fragment, no sample axis. Every row names `Database = sp` and `FASTAName = uniprot_sprot_2020-01-01_HUMAN`, independently confirming the search-database version the PRIDE record states. Counts in README.md. At `raw` depth, and on disk but unpinned — see the integrity record | PRIDE file category "Other type file URI"; library construction from the PXD022216 data-processing protocol; `derived:` column values and counts read from the file on disk |
+| `PXD022216/200723_CLL_library_direct.tsv` | Spectronaut spectral library exported for the direct (DIA-only) library used to search this deposit: a fragment-ion assay list, 35 columns, tab-separated, one row per fragment, no sample axis. Every row names `Database = sp` and `FASTAName = uniprot_sprot_2020-01-01_HUMAN`, independently confirming the search-database version the PRIDE record states. Counts in README.md. At `raw` depth and not currently held: a copy fetched under an earlier depth assignment was deleted rather than left unpinned | PRIDE file category "Other type file URI"; library construction from the PXD022216 data-processing protocol; `derived:` column values and counts read from that copy before it was deleted |
 | `PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv` | Spectronaut precursor-level report, long format. 13 columns, tab-separated, CRLF, 2 188 036 data rows: run name and replicate index, protein-group accessions/descriptions/names/coverage, protein-group q-value and quantity, precursor id, precursor q-value and total quantity. Holds exactly one row per observed cell and no null token, so unquantified precursors are absent rather than `NaN`. Its 50 distinct run names match the 50 `.d.zip` stems exactly. Shapes and completeness in README.md | PRIDE file category "Search engine output file URI"; `derived:` header row and full-file counts read from the downloaded file |
 | `PXD022216/20200727_104510_200725_cll_diaPASEF_direct_Report_Protein_long.tsv` | Spectronaut protein-level report, long format, companion to the precursor report above. 10 columns, tab-separated, CRLF. Rectangular over 50 runs x 5 199 protein groups with `NaN` for unquantified cells, but it carries a second, all-`NaN` row for most cells; the duplicate never conflicts with the informative one | PRIDE file category "Search engine output file URI"; `derived:` matrix shape and duplicate structure counted from the downloaded file |
 | `PXD022216/20200727_105729_200725_cll_diaPASEF_direct.sne` | Spectronaut session archive for the direct-library search of this deposit: the analysis workspace, coupled to the Spectronaut release that wrote it (v14.4), not a portable results table. Its export timestamp places it in the same batch as the two long-format reports — `20200727_103309`, `20200727_104510`, `20200727_105729`, all carrying the `200725_cll_diaPASEF_direct` analysis name | PRIDE file category "Other type file URI"; export batch inferred from the filename timestamps; that `.sne` is Spectronaut's session format is general knowledge about the format, not a statement either PRIDE record makes |
@@ -170,17 +170,18 @@ turns a populated pin into a different one without `--force`. All seven files
 were already on disk when the pins were taken, so each was verified against its
 publisher SHA-1 and pinned without any transfer; none was rejected.
 
-**One row is UNPINNED, and it needs a decision rather than a fix.**
-`PXD022216/200723_CLL_library_direct.tsv` is on disk and matches its publisher
-SHA-1, but it sits at `raw` depth, so the `default`-depth run left its row
-`PENDING`. `--verify-only raw` therefore reports it `UNPINNED`: bytes present
-that the manifest has never recorded. The cause is benign and documented — the
-file was fetched while it was still assigned to `default`, before the depth rules
-placed spectral libraries in the bulk tier — but the state is a genuine
-provenance gap, not a cosmetic one, and the two ways out both belong to the
-maintainer: `./DOWNLOAD.sh raw` pins it but starts the full 583.9 GiB retrieval,
-and deleting the file returns its row to `NOT_YET_DOWNLOADED` at the cost of a
-later ~3-minute re-fetch. Neither has been done.
+**One row was briefly UNPINNED, and the state was cleared by deletion.**
+`PXD022216/200723_CLL_library_direct.tsv` had been fetched while spectral
+libraries were still assigned to `default` depth. When the depth rules moved
+them to the bulk tier, the `default`-depth run no longer covered the file, so
+its row stayed `PENDING` while the bytes sat on disk — the `UNPINNED` state:
+bytes present that the manifest has never recorded. The alternative to deleting
+it was `./DOWNLOAD.sh raw`, which would have pinned it but also started the full
+583.3 GiB retrieval. On 2026-08-21 the file was deleted at the maintainer's
+direction, returning its row to `NOT_YET_DOWNLOADED`, and `./DOWNLOAD.sh raw`
+will fetch it again with a pin. No manifest row was edited to clear the state.
+The counts computed from that copy are kept in README.md and labelled as
+measurements from bytes no longer held.
 
 `MANIFEST.tsv` is not self-verifying. Its integrity rests on three things
 outside it: version control history, the saved upstream artifacts under
@@ -221,7 +222,10 @@ rather than to the publisher of record.
   multi-day transfer. A first attempt on the `.sne` was cancelled after 1.2 GiB
   of 24.2 GiB; `DOWNLOAD.sh` removed its temporary file on exit and left no
   partial or stub behind, and the file was then reclassified from `default` to
-  `raw` along with the spectral library.
+  `raw` along with the spectral library. The library itself was fetched before
+  that reclassification and has since been deleted, so nothing at `raw` depth is
+  held. Its content counts survive in README.md, labelled as computed from bytes
+  no longer present.
 - **The article's supplementary tables and figures.** Analysis results, not
   primary data, and deliberately out of scope. They are on the *Blood* article
   page at
@@ -294,11 +298,12 @@ Still open:
   34 columns; (b) ask the submitter whether the excluded acquisitions still
   exist; (c) analyse the reports at full width, documenting that 34 columns have
   no raw provenance in this deposit.
-- **Encoding and contents of the 187 `raw`-depth files** — not downloaded, so
-  nothing about their bytes has been observed. Options: (a) `./DOWNLOAD.sh raw`;
-  (b) fetch a single file by editing a one-row manifest copy and pointing
-  `--manifest` at it; (c) leave them unobserved, which is the current scoping
-  decision.
+- **Encoding and contents of the 186 `raw`-depth files never inspected** — not
+  downloaded, so nothing about their bytes has been observed. The 187th, the
+  spectral library, was inspected before deletion and its counts are recorded.
+  Options: (a) `./DOWNLOAD.sh raw`; (b) fetch a single file by editing a one-row
+  manifest copy and pointing `--manifest` at it; (c) leave them unobserved,
+  which is the current scoping decision.
 - **Whether PRIDE considers the 4096-byte `Pool6` file a known defect** — sought
   in the deposit's revision history and changelog entries, which mention only
   metadata updates. Options: (a) report it to `pride-support@ebi.ac.uk` and
