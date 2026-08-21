@@ -1,0 +1,12 @@
+#artifact	source_url	http_status	fetched_utc_date	tool
+pride_api_v3_files_PXD022216_page0.json	https://www.ebi.ac.uk/pride/ws/archive/v3/projects/PXD022216/files?pageSize=100&page=0	200	2026-08-20	curl 8.11.1
+pride_api_v3_files_PXD022198_page0.json	https://www.ebi.ac.uk/pride/ws/archive/v3/projects/PXD022198/files?pageSize=100&page=0	200	2026-08-20	curl 8.11.1
+pride_api_v3_files_PXD022198_page1.json	https://www.ebi.ac.uk/pride/ws/archive/v3/projects/PXD022198/files?pageSize=100&page=1	200	2026-08-20	curl 8.11.1
+pride_api_v2_project_PXD022216.json	https://www.ebi.ac.uk/pride/ws/archive/v2/projects/PXD022216	200	2026-08-20	curl 8.11.1
+pride_api_v2_project_PXD022198.json	https://www.ebi.ac.uk/pride/ws/archive/v2/projects/PXD022198	200	2026-08-20	curl 8.11.1
+proteomexchange_proxi_PXD022216.json	https://proteomecentral.proteomexchange.org/api/proxi/v0.1/datasets/PXD022216	200	2026-08-20	curl 8.11.1
+proteomexchange_proxi_PXD022198.json	https://proteomecentral.proteomexchange.org/api/proxi/v0.1/datasets/PXD022198	200	2026-08-20	curl 8.11.1
+ftp_https_dirlist_PXD022216.html	https://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/	200	2026-08-20	curl 8.11.1
+ftp_https_dirlist_PXD022198.html	https://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022198/	200	2026-08-20	curl 8.11.1
+http_head_2026-08-20.tsv	(HTTPS HEAD of all 194 deposit file URLs; columns: http_status, content_length, last_modified, url)	200	2026-08-20	curl 8.11.1
+europepmc_MED_34189564.json	https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:34189564&resultType=core&format=json	200	2026-08-20	curl 8.11.1

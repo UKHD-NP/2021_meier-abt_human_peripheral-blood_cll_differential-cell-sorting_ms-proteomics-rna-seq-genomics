@@ -1,0 +1,531 @@
+{
+  "contacts": [
+    {
+      "terms": [
+        {
+          "accession": "MS:1000586",
+          "name": "contact name",
+          "value": "Ben Collins"
+        },
+        {
+          "accession": "MS:1000589",
+          "name": "contact email",
+          "value": "ben.collins@qub.ac.uk"
+        },
+        {
+          "accession": "MS:1000590",
+          "name": "contact affiliation",
+          "value": "Queen's University Belfast"
+        },
+        {
+          "accession": "MS:1002037",
+          "name": "dataset submitter"
+        }
+      ]
+    },
+    {
+      "terms": [
+        {
+          "accession": "MS:1002332",
+          "name": "lab head"
+        },
+        {
+          "accession": "MS:1000586",
+          "name": "contact name",
+          "value": "Ben Collins"
+        },
+        {
+          "accession": "MS:1000589",
+          "name": "contact email",
+          "value": "ben.collins@qub.ac.uk"
+        },
+        {
+          "accession": "MS:1000590",
+          "name": "contact affiliation",
+          "value": "Queen's University Belfast, UK"
+        }
+      ]
+    }
+  ],
+  "datasetFiles": [
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_03_1978.d.zip"
+    },
+    {
+      "accession": "MS:1002849",
+      "name": "Search engine output file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/20200727_104510_200725_cll_diaPASEF_direct_Report_Protein_long.tsv"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_05_1980.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_34_1959.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_04_1979.d.zip"
+    },
+    {
+      "accession": "MS:1002849",
+      "name": "Search engine output file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_16_1991.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_48_1973.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_24_2008.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_09_1984.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_21_2005.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_20_2004.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_37_1962.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_25_1950.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_18_1993.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_17_1992.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_49_1974.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_07_1982.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_14_1989.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_38_1963.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_42_1967.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_08_1983.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_43_1968.d.zip"
+    },
+    {
+      "accession": "MS:1002845",
+      "name": "Associated file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/200723_CLL_library_direct.tsv"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_36_1961.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_29_1954.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_30_1955.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_02_1977.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_35_1960.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_12_1987.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_28_1953.d.zip"
+    },
+    {
+      "accession": "MS:1002851",
+      "name": "Other type file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/20200727_105729_200725_cll_diaPASEF_direct.sne"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_15_1990.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_39_1964.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_31_1956.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_19_2003.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_47_1972.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_44_1969.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_45_1970.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_46_1971.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_06_1981.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_27_1952.d.zip"
+    },
+    {
+      "accession": "MS:1002845",
+      "name": "Associated file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/Annotation_file_timsTOF.txt"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_22_2006.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_26_1951.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_13_1988.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_32_1957.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_41_1966.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_50_1975.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_11_1986.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_33_1958.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_10_1985.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_01_1976.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_23_2007.d.zip"
+    },
+    {
+      "accession": "MS:1002846",
+      "name": "Associated raw file URI",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216/fmeierab_T190525_CLL_diaPASEF_40_1965.d.zip"
+    }
+  ],
+  "datasetHistory": [
+    {
+      "PXPartner": "PRIDE",
+      "announcementXML": null,
+      "changeLogEntry": null,
+      "datasetIdentifier": "PXD022216",
+      "dataset_id": 22216,
+      "identifierDate": "2020-10-28T03:11:43Z",
+      "instrument": null,
+      "isLatestRevision": "N",
+      "keywordList": null,
+      "primarySubmitter": null,
+      "publication": null,
+      "reanalysisNumber": null,
+      "revisionDate": null,
+      "revisionNumber": 0,
+      "species": null,
+      "status": "ID requested",
+      "submissionDate": null,
+      "title": null
+    },
+    {
+      "PXPartner": null,
+      "announcementXML": "Submission_2021-09-27_03:34:11.935.xml",
+      "changeLogEntry": null,
+      "datasetIdentifier": "PXD022216",
+      "dataset_id": 22216,
+      "identifierDate": null,
+      "instrument": "timsTOF Pro",
+      "isLatestRevision": "N",
+      "keywordList": "submitter keyword: leukemia, CLL, diaPASEF; ",
+      "primarySubmitter": "Ben Collins",
+      "publication": "<a href=\"http://www.ncbi.nlm.nih.gov/pubmed/34189564\" target=\"_blank\">Meier-Abt et al. (2021)</a>",
+      "reanalysisNumber": 0,
+      "revisionDate": null,
+      "revisionNumber": 1,
+      "species": "Homo sapiens ",
+      "status": "announced",
+      "submissionDate": "2021-09-27T03:34:12Z",
+      "title": "The Proteome Landscape of Chronic Lymphocytic Leukemia"
+    },
+    {
+      "PXPartner": null,
+      "announcementXML": "Submission_2024-10-22_05:29:38.281.xml",
+      "changeLogEntry": "2024-10-22: Updated project metadata.",
+      "datasetIdentifier": "PXD022216",
+      "dataset_id": 22216,
+      "identifierDate": null,
+      "instrument": "timsTOF Pro",
+      "isLatestRevision": "Y",
+      "isReturnedVersion": "Y",
+      "keywordList": "submitter keyword: leukemia, diaPASEF, CLL; ",
+      "primarySubmitter": "Ben Collins",
+      "publication": "<a href=\"https://dx.doi.org/10.1182/blood.2020009741\" target=\"_blank\">10.1182/blood.2020009741</a>; <a href=\"https://www.ncbi.nlm.nih.gov/pubmed/34189564\" target=\"_blank\">Meier-Abt et al. (2021)</a>",
+      "reanalysisNumber": 0,
+      "revisionDate": "2024-10-22T05:29:39Z",
+      "revisionNumber": 2,
+      "species": "Homo sapiens ",
+      "status": "announced",
+      "submissionDate": null,
+      "title": "The Proteome Landscape of Chronic Lymphocytic Leukemia"
+    }
+  ],
+  "datasetOrigins": [
+    {
+      "terms": [
+        {
+          "accession": "MS:1002868",
+          "name": "Original data"
+        }
+      ]
+    }
+  ],
+  "datasetSummary": {
+    "announceDate": "2024-10-22",
+    "hostingRepository": "PRIDE",
+    "terms": [
+      {
+        "accession": "MS:1002854",
+        "name": "Peer-reviewed dataset"
+      },
+      {
+        "accession": "MS:1002857",
+        "name": "Unsupported dataset by repository"
+      }
+    ]
+  },
+  "description": "Many functional consequences of mutations on tumor phenotypes in chronic lymphocytic leukemia (CLL) are only partially known. This is in part due to missing information on the proteome of CLL. We profiled the proteome of 49 diverse CLL samples with data-independent acquisition mass spectrometry (DIA-MS) and related the results to genomic, functional and clinical differences. We found trisomy 12 and IGHV to be major determinants of proteome variation in CLL (1073 and 512 differential proteins). In contrast to reports in other biological systems, the disease driver trisomy 12 was associated with limited protein buffering, a finding that suggests the biological relevance of proteins encoded by chromosome 12 for CLL biology. Protein complex analyses detected functional units involved in BCR/PI3K/AKT signaling in CLL with trisomy 12. We identified the transcription factor complex of STAT1/STAT2 to be up-regulated in IGHV unmutated CLL. We tested the functional relevance of protein expression for associations with response to anticancer drugs, and STAT2 protein expression emerged as a biomarker for the prediction of response to kinase inhibitors including BTK and MEK inhibitors. This study highlights the emerging importance of protein abundance profiling in cancer research and identifies STAT2 protein levels as new key factor in CLL biology.",
+  "fullDatasetLinks": [
+    {
+      "accession": "MS:1002852",
+      "name": "Dataset FTP location",
+      "value": "ftp://ftp.pride.ebi.ac.uk/pride/data/archive/2021/09/PXD022216"
+    },
+    {
+      "accession": "MS:1001930",
+      "name": "PRIDE project URI",
+      "value": "http://www.ebi.ac.uk/pride/archive/projects/PXD022216"
+    }
+  ],
+  "identifiers": [
+    {
+      "accession": "MS:1001919",
+      "name": "ProteomeXchange accession number",
+      "value": "PXD022216"
+    },
+    {
+      "accession": "MS:1001921",
+      "name": "ProteomeXchange accession number version number",
+      "value": "2"
+    }
+  ],
+  "instruments": [
+    {
+      "accession": "MS:1003005",
+      "name": "timsTOF Pro"
+    }
+  ],
+  "keywords": [
+    {
+      "accession": "MS:1001925",
+      "name": "submitter keyword",
+      "value": "leukemia, diaPASEF, CLL"
+    }
+  ],
+  "modifications": [
+    {
+      "accession": "MOD:00394",
+      "name": "acetylated residue"
+    },
+    {
+      "accession": "MOD:00425",
+      "name": "monohydroxylated residue"
+    },
+    {
+      "accession": "MOD:00397",
+      "name": "iodoacetamide derivatized residue"
+    }
+  ],
+  "publications": [
+    {
+      "terms": [
+        {
+          "accession": "MS:1000879",
+          "name": "PubMed identifier",
+          "value": "34189564"
+        },
+        {
+          "accession": "MS:1002866",
+          "name": "Reference",
+          "value": "Meier-Abt F, Lu J, Cannizzaro E, Pohly MF, Kummer S, Pfammatter S, Kunz L, Collins BC, Nadeu F, Lee KS, Xue P, Gwerder M, Roiss M, H\u00fcllein J, Scheinost S, Dietrich S, Campo E, Huber W, Aebersold R, Zenz T. The protein landscape of chronic lymphocytic leukemia. Blood. 2021 138(24):2514-2525"
+        }
+      ]
+    },
+    {
+      "terms": [
+        {
+          "accession": "MS:1001922",
+          "name": "Digital Object Identifier (DOI)",
+          "value": "10.1182/blood.2020009741"
+        }
+      ]
+    }
+  ],
+  "sdrf_metadata": {
+    "external_sdrf_data_url": null,
+    "external_sdrf_ui_url": null,
+    "sdrf_best_source": null,
+    "sdrf_data": null,
+    "sdrf_source": {
+      "agentic": {
+        "data_url": null,
+        "sdrf_data": null,
+        "ui_url": null
+      },
+      "curated": {
+        "data_url": null,
+        "sdrf_data": null,
+        "ui_url": null
+      },
+      "repository": {
+        "data_url": null,
+        "sdrf_data": null,
+        "ui_url": null
+      }
+    }
+  },
+  "species": [
+    {
+      "terms": [
+        {
+          "accession": "MS:1001469",
+          "name": "taxonomy: scientific name",
+          "value": "Homo sapiens (Human)"
+        },
+        {
+          "accession": "MS:1001467",
+          "name": "taxonomy: NCBI TaxID",
+          "value": "9606"
+        }
+      ]
+    }
+  ],
+  "title": "The Proteome Landscape of Chronic Lymphocytic Leukemia"
+}

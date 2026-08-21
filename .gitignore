@@ -1,0 +1,18 @@
+# Data files are not versioned — MANIFEST.tsv and DOWNLOAD.sh are the record.
+# Git stores every version forever, has no useful diff for a 4 GB binary
+# acquisition, and would make the clone unusable. The bytes are reproducible
+# from the manifest; if they ever need versioning, that is git-annex/DVC/LFS.
+/PXD022216/
+/PXD022198/
+
+# Derived from MANIFEST.tsv on demand — committing it would create a second
+# place for a hash to be wrong.
+SHA256SUMS
+
+# Scratch left by an interrupted download or manifest update.
+.dl.*
+.MANIFEST.*
+*.tmp
+
+# Tooling, not part of this dataset's record.
+/.skills/
