@@ -89,12 +89,26 @@ saved API artifacts under `provenance/upstream/`. They are upstream claims, not
 local measurements — `MANIFEST.tsv`'s `bytes` column holds a local observation
 and is `PENDING` until a file is retrieved.
 
+`./DOWNLOAD_PATIENT_RUNS.sh` fetches a narrower set than any depth: the 117
+patient-sample `.raw` files of PXD022198 and nothing else, 330.4 GiB. It reads
+the selection from `PXD022198/Annotation_file.csv` — every row of the two cohort
+tables whose `Batch` is `batch1`, `batch2` or `batch3` (49 + 42 + 26) — after
+checking that file against its pin, and refuses to run unless the selection
+resolves to exactly 117 manifest rows. The 18 library runs, all of PXD022216,
+the spectral library and the `.sne` archive are left out. It retrieves nothing
+itself: it runs `./DOWNLOAD.sh raw` against a 117-row copy of `MANIFEST.tsv`, so
+every file passes the same Tier A gate, and then writes the resulting pins into
+`MANIFEST.tsv` under the same rule `DOWNLOAD.sh` follows. Its options are a
+subset of `DOWNLOAD.sh`'s (`--help`, `--list-flags`, `--dry-run`,
+`--verify-only`, `--force`, `--root`); it takes no depth.
+
 ```
 2021_meier-abt_human_blood_cll__ms-proteomics-rna-seq-genomics_ds/
   README.md                     this file
   PROVENANCE.md                 citation, license, per-file descriptions, integrity record
   MANIFEST.tsv                  authoritative paths, depths, pins, upstream hashes, URLs (194 rows)
   DOWNLOAD.sh                   retrieve and verify; --help for options
+  DOWNLOAD_PATIENT_RUNS.sh      retrieve and verify only the 117 PXD022198 patient-sample runs
   TEST_DOWNLOAD.sh              check that DOWNLOAD.sh and these documents are correct
   .gitignore                    keeps the data files out of version control
   provenance/upstream/          saved upstream metadata artifacts (checksum evidence)
@@ -453,6 +467,7 @@ values in `MANIFEST.tsv` and agree exactly.
 | `MANIFEST.tsv` | authoritative paths, sizes, checksums, and source URLs |
 | `MERKEL-TREE.json` | Merkle tree of the downloaded bytes; one root hash fingerprints the whole download |
 | `DOWNLOAD.sh` | retrieve and verify the data; `--help` for options |
-| `TEST_DOWNLOAD.sh` | check that `DOWNLOAD.sh` is correct and safe |
+| `DOWNLOAD_PATIENT_RUNS.sh` | retrieve and verify only the 117 PXD022198 patient-sample runs, through `DOWNLOAD.sh` |
+| `TEST_DOWNLOAD.sh` | check that `DOWNLOAD.sh` and `DOWNLOAD_PATIENT_RUNS.sh` are correct and safe |
 | `.gitignore` | keeps the data files out of version control |
 | `provenance/upstream/` | upstream checksum artifacts, saved verbatim as evidence |
