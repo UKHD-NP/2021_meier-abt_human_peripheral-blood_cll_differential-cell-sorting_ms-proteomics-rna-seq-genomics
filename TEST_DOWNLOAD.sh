@@ -68,6 +68,14 @@
 #                   file listed in it appears in git ls-files.
 # verify real dir   --verify-only against the real directory, at every depth.
 #                   Reads, never writes.
+# patient-runs      DOWNLOAD_PATIENT_RUNS.sh parses, carries no hash literal, no
+#                   retrieval or git call of its own, offers only DOWNLOAD.sh
+#                   flags, and rejects a DEPTH and manifest-wide flags with
+#                   exit 2; its selection is exactly the 117 patient runs
+#                   (49/42/26) with no library or timsTOF run; its --help size
+#                   matches the PRIDE records; and, against a stub DOWNLOAD.sh
+#                   in the sandbox, its pin merge only turns PENDING into an
+#                   observation unless --force is given.
 
 set -uo pipefail
 
@@ -422,6 +430,121 @@ for d in default raw; do
     grep -E '^(MISMATCH|MISSING|UNPINNED)' "$SANDBOX/vo_$d.txt" | head -5 | sed 's/^/      /'
   fi
 done
+
+sect "patient-runs wrapper (DOWNLOAD_PATIENT_RUNS.sh)"
+PR="$SCRIPT_DIR/DOWNLOAD_PATIENT_RUNS.sh"
+if [[ ! -f "$PR" ]]; then
+  bad "DOWNLOAD_PATIENT_RUNS.sh is missing"
+else
+  if bash -n "$PR" 2>/dev/null; then ok "bash -n DOWNLOAD_PATIENT_RUNS.sh"; else bad "bash -n DOWNLOAD_PATIENT_RUNS.sh"; fi
+  if command -v shellcheck >/dev/null 2>&1; then
+    if shellcheck -S warning "$PR" >"$SANDBOX/sc_pr.txt" 2>&1; then ok "shellcheck clean on the wrapper"
+    else bad "shellcheck reported findings on the wrapper"; sed 's/^/      /' "$SANDBOX/sc_pr.txt"; fi
+  else
+    skip "shellcheck not installed — static lint of the wrapper did not run"
+  fi
+  gp() { # <label> <extended regex that must NOT match the wrapper>
+    if grep -Eqn -e "$2" "$PR"; then bad "wrapper: $1"; grep -Ens -e "$2" "$PR" | sed 's/^/      /'
+    else ok "wrapper: $1"; fi
+  }
+  gp "no --insecure / -k / --no-check-certificate" '--insecure|--no-check-certificate|[[:space:]]-k[[:space:]]'
+  gp "no eval"                                     '(^|[^[:alnum:]_])eval[[:space:]]'
+  gp "no curl or wget (it delegates every retrieval to DOWNLOAD.sh)" '(^|[^[:alnum:]_-])(curl|wget)[[:space:]]'
+  gp "no 32/40/64-hex literal"                     '\b[0-9a-fA-F]{32}\b|\b[0-9a-fA-F]{40}\b|\b[0-9a-fA-F]{64}\b'
+  if grep -vE 'printf|echo' "$PR" | grep -Eq '(^|[;&|]|\$\()[[:space:]]*git[[:space:]]+(add|commit|init|push|tag)'; then
+    bad "wrapper invokes git — committing is the human's decision"
+  else
+    ok "wrapper never runs git (it only prints the suggested command)"
+  fi
+  # Its pin merge is the one place it writes MANIFEST.tsv; like write_pin() it
+  # may assign only the local-observation triple, fields 4-6.
+  if awk '/^merge_pins\(\)/,/^}/' "$PR" | grep -Eq '\$(1|2|3|7|8|9|1[0-2]) *= *[^=]'; then
+    bad "merge_pins() assigns a field outside the local-observation triple"
+  else
+    ok "merge_pins() assigns only fields 4-6 (bytes, sha256, pinned_date)"
+  fi
+  # Every flag it offers is a DOWNLOAD.sh flag with the same arity.
+  if [[ -z "$(comm -23 <(bash "$PR" --list-flags | sort) <(bash "$DL" --list-flags | sort))" ]]; then
+    ok "wrapper flags are a subset of DOWNLOAD.sh's, with the same arities"
+  else
+    bad "wrapper offers a flag or arity DOWNLOAD.sh does not"
+  fi
+  bad_usage=0
+  for a in raw default '--manifest x' --refresh-manifest --force-pin --emit-sha256sums --bogus '--dry-run --force' '--verify-only --force'; do
+    # shellcheck disable=SC2086
+    ( cd "$SANDBOX" && bash "$PR" $a ) >/dev/null 2>&1; st=$?
+    [[ $st -eq 2 ]] || { bad_usage=$((bad_usage+1)); printf '      %s exited %d, expected 2\n' "$a" "$st"; }
+  done
+  [[ $bad_usage -eq 0 ]] && ok "wrapper rejects a DEPTH, manifest-wide flags and invalid combinations with exit 2" \
+    || bad "wrapper usage errors: $bad_usage wrong exit code(s)"
+
+  # The selection, read through --verify-only against the real directory.
+  ls_before="$(ls -A "$SCRIPT_DIR")"
+  ( cd "$SANDBOX" && bash "$PR" --verify-only ) >"$SANDBOX/pr_vo.txt" 2>&1; st=$?
+  ls_after="$(ls -A "$SCRIPT_DIR")"
+  rows="$(grep -E '^(OK|MISMATCH|MISSING|UNPINNED|NOT_YET_DOWNLOADED) ' "$SANDBOX/pr_vo.txt" | awk '{print $3}')"
+  nsel=$(printf '%s\n' "$rows" | grep -c .)
+  b1=$(printf '%s\n' "$rows" | grep -cE '^PXD022198/20191016_0[0-9]{2}_S[0-9]+_CLL_[^/]*\.raw$')
+  b2=$(printf '%s\n' "$rows" | grep -cE '^PXD022198/20210107_[0-9]+_S[0-9]+_CLL_CD19selected_[0-9]+_Diseased\.raw$')
+  b3=$(printf '%s\n' "$rows" | grep -cE '^PXD022198/20201112_[0-9]+_S[0-9]+_CLL_screen2_[0-9]+_Diseased\.raw$')
+  lib=$(printf '%s\n' "$rows" | grep -cE '_L[0-9]|Pool|^PXD022216/')
+  if [[ ( $st -eq 0 || $st -eq 1 ) && $nsel -eq 117 && $b1 -eq 49 && $b2 -eq 42 && $b3 -eq 26 && $lib -eq 0 ]]; then
+    ok "wrapper selects 117 runs (batch1 49, batch2 42, batch3 26), no library run, nothing from PXD022216 (exit $st)"
+  else
+    bad "wrapper selection: exit $st, $nsel rows, batches $b1/$b2/$b3, $lib library or timsTOF rows"
+    tail -5 "$SANDBOX/pr_vo.txt" | sed 's/^/      /'
+  fi
+  [[ "$ls_before" == "$ls_after" ]] && ok "wrapper --verify-only leaves the data directory listing unchanged" \
+    || bad "wrapper --verify-only left something behind in the data directory"
+
+  # The size baked into --help, recomputed from the saved PRIDE file records.
+  want_gib="$(printf '%s\n' "$rows" | python3 -I -c '
+import json, sys
+recs = []
+for p in sys.argv[1:]:
+    recs += json.load(open(p))
+size = {r["fileName"]: r["fileSizeBytes"] for r in recs}
+names = [l.strip().split("/", 1)[1] for l in sys.stdin if l.strip()]
+print(f"{sum(size[n] for n in names) / 2**30:.1f}")
+' "$SCRIPT_DIR"/provenance/upstream/pride_api_v3_files_PXD022198_page*.json 2>/dev/null)"
+  if [[ -n "$want_gib" ]] && bash "$PR" --help | grep -Fq "about $want_gib GiB"; then
+    ok "wrapper --help states $want_gib GiB, matching the PRIDE file records"
+  else
+    bad "wrapper --help size does not match the PRIDE file records (expected about ${want_gib:-?} GiB)"
+  fi
+
+  # Pin merge, in a sandbox copy with a stub in place of DOWNLOAD.sh. The stub
+  # pins the first two rows of the subset manifest it is handed and exits 4,
+  # like a partial download.
+  PRB="$SANDBOX/prbundle"
+  mkdir -p "$PRB/PXD022198"
+  cp "$PR" "$MANIFEST" "$PRB/"
+  cp "$SCRIPT_DIR/PXD022198/Annotation_file.csv" "$PRB/PXD022198/"
+  chmod a-w "$PRB/MANIFEST.tsv"
+  cat > "$PRB/DOWNLOAD.sh" <<'STUB'
+#!/usr/bin/env bash
+m=''; while [[ $# -gt 0 ]]; do [[ $1 == --manifest ]] && { m=$2; shift; }; shift; done
+awk -F'\t' -v OFS='\t' -v h="$STUB_HEX" 'NR > 1 && n < 2 { $4 = 7; $5 = h; $6 = "2000-01-01"; n++ } { print }' "$m" > "$m.t" && mv "$m.t" "$m"
+exit 4
+STUB
+  hex() { printf "%064d" 0 | tr 0 "$1"; }
+  ( cd "$PRB" && STUB_HEX="$(hex b)" bash ./DOWNLOAD_PATIENT_RUNS.sh ) >/dev/null 2>&1; st=$?
+  first2="$(awk -F'\t' 'NR > 1 && $4 != "PENDING"' "$PRB/MANIFEST.tsv" | wc -l)"
+  same_rest="$(diff <(awk -F'\t' 'NR > 1 && $4 == "PENDING"' "$PRB/MANIFEST.tsv") \
+                    <(awk -F'\t' 'NR > 1 && $4 == "PENDING"' "$MANIFEST" | tail -n +3) >/dev/null && echo y)"
+  if [[ $st -eq 4 && "$first2" -eq $(( $(awk -F'\t' 'NR > 1 && $4 != "PENDING"' "$MANIFEST" | wc -l) + 2 )) && "$same_rest" == y && ! -w "$PRB/MANIFEST.tsv" ]]; then
+    ok "pins merge back PENDING -> observed, other rows untouched, exit code passed through, manifest stays read-only"
+  else
+    bad "pin merge: exit $st, pinned rows $first2, other rows unchanged=${same_rest:-n}"
+  fi
+  before_merge="$(sha256sum "$PRB/MANIFEST.tsv" | awk '{print $1}')"
+  ( cd "$PRB" && STUB_HEX="$(hex c)" bash ./DOWNLOAD_PATIENT_RUNS.sh ) >/dev/null 2>&1
+  [[ "$(sha256sum "$PRB/MANIFEST.tsv" | awk '{print $1}')" == "$before_merge" ]] \
+    && ok "a populated pin is not moved without --force" || bad "a populated pin moved without --force"
+  ( cd "$PRB" && STUB_HEX="$(hex c)" bash ./DOWNLOAD_PATIENT_RUNS.sh --force ) >/dev/null 2>&1
+  [[ "$(awk -F'\t' -v h="$(hex c)" 'NR > 1 && $5 == h' "$PRB/MANIFEST.tsv" | wc -l)" -eq 2 ]] \
+    && ok "--force moves a populated pin" || bad "--force did not move the populated pins"
+fi
 
 sect "no test wrote to the real manifest"
 if [[ "$(sha256sum "$MANIFEST" | awk '{print $1}')" == "$MSUM_BEFORE" ]]; then
