@@ -57,7 +57,7 @@ the next reader needs to know it was looked at.
 | PRIDE PXD022198 — 135 `.raw` Thermo Lumos acquisitions | yes | `raw` | Raw instrument files: `raw` by the skill's file-type rule. 340.8 GiB |
 | PRIDE PXD022216 — exported Spectronaut spectral library `200723_CLL_library_direct.tsv` | yes | `raw` | A spectral library, which the skill's file-type rule places at `raw` depth. It is a fragment-ion assay list, not a sample × feature matrix |
 | PRIDE PXD022216 — Spectronaut `.sne` session archive | yes | `raw` | A 24.2 GiB analysis workspace that needs Spectronaut itself to open and is coupled to the version that wrote it. Bulk input, not an analysis-ready table |
-| Supplementary tables and figures of the *Blood* article | no | n/a | Journal-published analysis results, not primary data, and behind the publisher's paywall. Excluded at the user's direction |
+| Supplementary tables and figures of the *Blood* article | held locally, not in the manifest | n/a | Supplement 1 carries the per-patient clinical and genetic metadata (Table S1) needed to analyse the deposits. The publisher blocks automated retrieval, so it was obtained by hand and is recorded by checksum under "Manually obtained files", not by `DOWNLOAD.sh` |
 | DNA-seq, RNA-seq and ex vivo drug-response layers | no | n/a | Not part of either deposit. The article states they were generated previously and are distributed in the Bioconductor package `BloodCancerMultiOmics2017` |
 | Published analysis code and Rmarkdown workflows | no | n/a | Code, not data. URLs transcribed from the article's data-sharing statement and left UNVERIFIED |
 | PRIDE Aspera transfer endpoints | no | n/a | An alternative transport for the same bytes, not a separate source. `DOWNLOAD.sh` uses HTTPS only, so the manifest records only HTTPS URLs |
@@ -213,6 +213,26 @@ University Belfast repository copy both returned HTTP 403 to this session. That
 PDF is a third-party mirror, so treat quotations from it as sourced to a mirror
 rather than to the publisher of record.
 
+## Manually obtained files
+
+Files held in this directory that `DOWNLOAD.sh` cannot retrieve. They are not
+in `MANIFEST.tsv`, because the manifest lists only files the script can fetch
+and re-verify, and they are git-ignored like the deposit data. The checksum
+below is the only integrity record: compare a copy against it with
+`sha256sum supplementary-data/bloodbld2020009741-suppl1.pdf`.
+
+| Field | Value |
+| --- | --- |
+| Path | `supplementary-data/bloodbld2020009741-suppl1.pdf` |
+| What it is | Supplement 1 of Meier-Abt et al., *Blood* 2021 (doi:10.1182/blood.2020009741): 30-page PDF with Figures S1–S24 and Tables S1–S3 |
+| Why it is held | Table S1, "Patient characteristics", gives one row per patient (ID, age, sex, IGHV status, trisomy 12, WBC count, survival, treatment, cohort, batch); Tables S2 and S3 summarise the main and additional cohorts. The `batch` column matches the Batch column of `PXD022198/Annotation_file.csv`, which makes this the clinical key for the patient runs |
+| Bytes | 3323551 |
+| sha256 | `3931ec29a56c6808711bd6cd121042a87cb78cae8494ec15c936769cf84f9646` |
+| Obtained | 2026-08-23 (file modification time), by hand from the publisher's article page |
+| Source | `https://ashpublications.org/blood/article/138/24/2514/476272/The-protein-landscape-of-chronic-lymphocytic`, Supplementary data section |
+| Why not automated | Checked 2026-10-19: the DOI and the article page return HTTP 403 with a Cloudflare JavaScript challenge, to curl and to a browser user agent alike; the file's CDN path (`ash.silverchair-cdn.com/…/bloodbld2020009741-suppl1.pdf`) returns HTTP 403 `MissingKey`, because it serves only expiring signed links issued by that page; Europe PMC holds no supplementary files for the article (HTTP 404). There is no stable URL for a script to re-fetch |
+| License | Not covered by the deposits' CC0. The article is not open access (Europe PMC: `isOpenAccess: N`, `license: null`), so the file is not redistributed with this repository |
+
 ## Not downloaded
 
 - **Depth `raw`: 187 files, 583.3 GiB.** The 185 raw MS acquisitions
@@ -226,13 +246,6 @@ rather than to the publisher of record.
   that reclassification and has since been deleted, so nothing at `raw` depth is
   held. Its content counts survive in README.md, labelled as computed from bytes
   no longer present.
-- **The article's supplementary tables and figures.** Analysis results, not
-  primary data, and deliberately out of scope. They are on the *Blood* article
-  page at
-  `https://ashpublications.org/blood/article/138/24/2514/476272/The-protein-landscape-of-chronic-lymphocytic`,
-  which is UNVERIFIED: the publisher returned HTTP 403 to every automated
-  request from this session, so the URL was not fetched and its reachability is
-  not confirmed here.
 - **The DNA-sequencing, RNA-sequencing and ex vivo drug-response layers**
   integrated in the paper, distributed per the article in the Bioconductor data
   package `BloodCancerMultiOmics2017`. Not part of either PRIDE deposit and not

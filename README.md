@@ -8,8 +8,10 @@ EMBL-EBI: **PXD022216** holds the Bruker timsTOF Pro diaPASEF acquisitions
 acquisitions (135 `.raw` files). All 194 deposited files are documented and
 checksummed here, grouped into three cumulative download depths so the
 analysis-ready tables can be fetched without committing to 584 GiB of raw
-acquisitions. The article's supplementary tables are analysis results published
-by the journal, not deposited data, and are deliberately out of scope.
+acquisitions. The article's Supplement 1, which carries the per-patient clinical
+metadata, is held alongside them but obtained by hand: the publisher blocks
+automated downloads, so it is recorded by checksum in PROVENANCE.md rather than
+in the manifest.
 
 ## What the source study found
 
@@ -68,6 +70,12 @@ Depth `default` has been retrieved and verified: all 7 files are on disk, each
 checked against its publisher SHA-1 before its pin was written. All 187
 `raw`-depth rows are planned, with `bytes`, `sha256` and `pinned_date` all
 `PENDING`, and none of those files is held locally.
+
+`supplementary-data/bloodbld2020009741-suppl1.pdf` is the article's Supplement 1.
+Its Table S1 lists each patient's age, sex, IGHV status, trisomy 12, WBC count,
+survival, treatment, cohort and batch, so it is the clinical key for the runs.
+`DOWNLOAD.sh` cannot fetch it; get it from the *Blood* article page by hand and
+check it against the sha256 under "Manually obtained files" in PROVENANCE.md.
 
 Files are grouped into three download depths. `./DOWNLOAD.sh` with no argument
 fetches `default`; pass `supplementary` or `raw` to go deeper. Depth is
@@ -435,4 +443,5 @@ why. The data files themselves are not versioned — the manifest and
 | `DOWNLOAD_PATIENT_RUNS.sh` | retrieve and verify only the 117 PXD022198 patient-sample runs, through `DOWNLOAD.sh` |
 | `TEST_DOWNLOAD.sh` | check that `DOWNLOAD.sh` and `DOWNLOAD_PATIENT_RUNS.sh` are correct and safe |
 | `.gitignore` | keeps the data files out of version control |
+| `supplementary-data/` | the article's Supplement 1 (patient metadata), obtained by hand; git-ignored, checksum in PROVENANCE.md |
 | `provenance/upstream/` | upstream checksum artifacts, saved verbatim as evidence |

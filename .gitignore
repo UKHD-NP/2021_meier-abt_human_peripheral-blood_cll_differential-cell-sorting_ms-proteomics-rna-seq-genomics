@@ -4,6 +4,7 @@
 # from the manifest; if they ever need versioning, that is git-annex/DVC/LFS.
 /PXD022216/
 /PXD022198/
+/supplementary-data/
 
 # Derived from MANIFEST.tsv on demand — committing it would create a second
 # place for a hash to be wrong.
