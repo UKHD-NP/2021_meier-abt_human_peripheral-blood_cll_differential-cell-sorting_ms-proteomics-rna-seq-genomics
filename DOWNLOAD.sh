@@ -64,9 +64,9 @@
 #   observed value unless --force says the file was genuinely re-downloaded.
 #   It never writes a computed hash into an upstream column, and it never
 #   touches git.
-#   Upstream byte counts are deliberately absent from the manifest, because
-#   `bytes` is a local observation. They live in the saved API artifacts under
-#   provenance/upstream/.
+#   up_bytes is the size PRIDE states for each file, transcribed from the saved
+#   API artifacts under provenance/upstream/. It is an upstream claim, kept apart
+#   from `bytes`, the local observation; it is a Tier B row's whole authority.
 #
 # Known upstream defect (see PROVENANCE.md):
 #   PXD022198/20210107_003_S281243_CLL_CD19selected_Pool6.raw is served by the
@@ -85,7 +85,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MANIFEST="$SCRIPT_DIR/MANIFEST.tsv"
 ROOT="$SCRIPT_DIR"
 
-EXPECTED_HEADER='#path	tier	depth	bytes	sha256	pinned_date	up_algo	up_hash	up_hash_src	up_hash_copy	up_fetched	url'
+EXPECTED_HEADER='#path	tier	depth	bytes	sha256	pinned_date	up_bytes	up_algo	up_hash	up_hash_src	up_hash_copy	up_fetched	url'
 PENDING='PENDING'
 TIER_C_SENTINEL='TIER_C_NO_UPSTREAM_HASH'
 TIER_B_SENTINEL='TIER_B_SIZE_ONLY'
@@ -272,7 +272,7 @@ depth_rank() {
 
 # ------------------------------------------------------------- manifest gate ---
 M_PATH=(); M_TIER=(); M_DEPTH=(); M_BYTES=(); M_SHA=(); M_PDATE=()
-M_UALGO=(); M_UHASH=(); M_USRC=(); M_UCOPY=(); M_UFETCH=(); M_URL=()
+M_UBYTES=(); M_UALGO=(); M_UHASH=(); M_USRC=(); M_UCOPY=(); M_UFETCH=(); M_URL=()
 IN_SCOPE=0
 DEPTH_TALLY=''
 
@@ -288,18 +288,18 @@ load_manifest() {
     die 3 "manifest header does not match the expected column list (line 1 of $MANIFEST)"
 
   local lineno=1 n=0
-  local path tier depth bytes sha pdate ualgo uhash usrc ucopy ufetch url extra
+  local path tier depth bytes sha pdate ubytes ualgo uhash usrc ucopy ufetch url extra
   local -A seen=()
   local -A dcount=()
 
-  while IFS=$'\t' read -r path tier depth bytes sha pdate ualgo uhash usrc ucopy ufetch url extra || [[ -n "${path:-}" ]]; do
+  while IFS=$'\t' read -r path tier depth bytes sha pdate ubytes ualgo uhash usrc ucopy ufetch url extra || [[ -n "${path:-}" ]]; do
     lineno=$((lineno + 1))
     [[ -z "${path:-}" ]] && continue
     [[ "$path" == \#* ]] && continue
 
-    [[ -z "${extra:-}" ]] || die 3 "line $lineno: too many fields (expected 12)"
-    for f in "$tier" "$depth" "$bytes" "$sha" "$pdate" "$ualgo" "$uhash" "$usrc" "$ucopy" "$ufetch" "$url"; do
-      [[ -n "${f:-}" ]] || die 3 "line $lineno: wrong field count or empty field (expected 12 non-empty fields)"
+    [[ -z "${extra:-}" ]] || die 3 "line $lineno: too many fields (expected 13)"
+    for f in "$tier" "$depth" "$bytes" "$sha" "$pdate" "$ubytes" "$ualgo" "$uhash" "$usrc" "$ucopy" "$ufetch" "$url"; do
+      [[ -n "${f:-}" ]] || die 3 "line $lineno: wrong field count or empty field (expected 13 non-empty fields)"
     done
 
     case "$tier" in A|B|C) ;; *) die 3 "line $lineno: tier must be A, B or C, got '$tier'" ;; esac
@@ -322,6 +322,10 @@ load_manifest() {
       [[ "$pdate" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || die 3 "line $lineno: pinned_date must be YYYY-MM-DD or $PENDING"
     fi
 
+    # up_bytes is the size the source states, or '-' where it states none.
+    [[ "$ubytes" == '-' || "$ubytes" =~ ^[1-9][0-9]*$ ]] || \
+      die 3 "line $lineno: up_bytes must be a positive integer or '-', got '$ubytes'"
+
     case "$tier" in
       A)
         local want; want="$(hexlen_for_algo "$ualgo")"
@@ -336,6 +340,7 @@ load_manifest() {
       B)
         [[ "$ualgo" == "$TIER_B_SENTINEL" ]] || die 3 "line $lineno: tier B up_algo must be $TIER_B_SENTINEL"
         [[ "$uhash" == '-' ]] || die 3 "line $lineno: tier B up_hash must be '-'"
+        [[ "$ubytes" != '-' ]] || die 3 "line $lineno: tier B up_bytes must state the upstream size — it is the tier's only authority"
         ;;
       C)
         [[ "$ualgo" == "$TIER_C_SENTINEL" ]] || die 3 "line $lineno: tier C up_algo must be $TIER_C_SENTINEL"
@@ -352,6 +357,7 @@ load_manifest() {
 
     M_PATH+=("$path");   M_TIER+=("$tier");   M_DEPTH+=("$depth")
     M_BYTES+=("$bytes"); M_SHA+=("$sha");     M_PDATE+=("$pdate")
+    M_UBYTES+=("$ubytes")
     M_UALGO+=("$ualgo"); M_UHASH+=("$uhash"); M_USRC+=("$usrc")
     M_UCOPY+=("$ucopy"); M_UFETCH+=("$ufetch"); M_URL+=("$url")
     dcount["$depth"]=$(( ${dcount[$depth]:-0} + 1 ))
@@ -548,12 +554,8 @@ download_all() {
         fi
         ;;
       B)
-        if [[ "${M_BYTES[i]}" == "$PENDING" ]]; then
-          warn "tier B row with no pinned size to compare: $rel"; gate_ok=0
-        else
-          local size; size="$(wc -c < "$TMPFILE" | tr -d ' ')"
-          [[ "$size" == "${M_BYTES[i]}" ]] || { warn "TIER B SIZE MISMATCH $rel: expected ${M_BYTES[i]} got $size"; gate_ok=0; }
-        fi
+        local size; size="$(wc -c < "$TMPFILE" | tr -d ' ')"
+        [[ "$size" == "${M_UBYTES[i]}" ]] || { warn "TIER B SIZE MISMATCH $rel: upstream states ${M_UBYTES[i]} got $size"; gate_ok=0; }
         ;;
       C)
         if [[ "${M_SHA[i]}" == "$PENDING" ]]; then
@@ -626,12 +628,12 @@ refresh_manifest() {
   chmod 0644 "$cand"
   printf '%s\n' "$EXPECTED_HEADER" > "$cand"
   for ((i = 0; i < ${#M_PATH[@]}; i++)); do
-    local uhash="${M_UHASH[i]}" ufetch="${M_UFETCH[i]}"
+    local uhash="${M_UHASH[i]}" ubytes="${M_UBYTES[i]}" ufetch="${M_UFETCH[i]}"
     if selected "$i" && [[ "${M_UCOPY[i]}" != '-' && -f "$ROOT/${M_UCOPY[i]}" ]]; then
       ufetch="$(date -u '+%Y-%m-%d')"
-      local base fresh
+      local base fresh fresh_size
       base="$(basename "${M_PATH[i]}")"
-      fresh="$(python3 - "$ROOT/${M_UCOPY[i]}" "$base" <<'PY' 2>/dev/null || true
+      IFS=$'\t' read -r fresh fresh_size < <(python3 - "$ROOT/${M_UCOPY[i]}" "$base" <<'PY' 2>/dev/null || true
 import json,sys
 try:
     recs=json.load(open(sys.argv[1]))
@@ -639,9 +641,9 @@ except Exception:
     sys.exit(0)
 for r in recs if isinstance(recs,list) else []:
     if r.get("fileName")==sys.argv[2]:
-        print(r.get("checksum","")); break
+        print(r.get("checksum",""), r.get("fileSizeBytes",""), sep="\t"); break
 PY
-)"
+) || true
       if [[ -n "$fresh" && "$fresh" != "$uhash" ]]; then
         if [[ $do_force_pin -eq 1 ]]; then
           warn "upstream ${M_UALGO[i]} changed for ${M_PATH[i]} — taking the new value"
@@ -650,10 +652,18 @@ PY
           warn "upstream ${M_UALGO[i]} changed for ${M_PATH[i]} — keeping the old value; rerun with --force-pin to accept it"
         fi
       fi
+      if [[ -n "${fresh_size:-}" && "$fresh_size" != "$ubytes" ]]; then
+        if [[ $do_force_pin -eq 1 ]]; then
+          warn "upstream size changed for ${M_PATH[i]} ($ubytes -> $fresh_size) — taking the new value; the --help depth sizes need regenerating"
+          ubytes="$fresh_size"
+        else
+          warn "upstream size changed for ${M_PATH[i]} ($ubytes -> $fresh_size) — keeping the old value; rerun with --force-pin to accept it"
+        fi
+      fi
     fi
-    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
       "${M_PATH[i]}" "${M_TIER[i]}" "${M_DEPTH[i]}" "${M_BYTES[i]}" "${M_SHA[i]}" "${M_PDATE[i]}" \
-      "${M_UALGO[i]}" "$uhash" "${M_USRC[i]}" "${M_UCOPY[i]}" "$ufetch" "${M_URL[i]}" >> "$cand"
+      "$ubytes" "${M_UALGO[i]}" "$uhash" "${M_USRC[i]}" "${M_UCOPY[i]}" "$ufetch" "${M_URL[i]}" >> "$cand"
   done
 
   log "validating the candidate manifest structurally"

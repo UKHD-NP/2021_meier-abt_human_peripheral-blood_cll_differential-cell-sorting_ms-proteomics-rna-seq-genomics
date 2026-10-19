@@ -26,7 +26,7 @@
 #                   script owns the flag set, the DEPTH positional, the exit
 #                   codes, and the generic manifest-gate rejection fixtures.
 # template          No unfilled {{SLOT}} survives; MANIFEST header is
-#                   byte-identical to the canonical 12-column header.
+#                   byte-identical to the canonical 13-column header.
 # manifest struct   Field count, sort order, uniqueness, hex well-formedness,
 #                   path safety, tier rules — checked independently of
 #                   DOWNLOAD.sh's own gate.
@@ -41,6 +41,10 @@
 # tier integrity    No Tier A row with a placeholder or PENDING upstream hash,
 #                   no Tier C row carrying an upstream URL, no row reusing its
 #                   sha256 as its up_hash.
+# upstream size     up_bytes is a positive integer or '-', a number on every
+#                   Tier B row, and equal to `bytes` wherever a row is pinned:
+#                   a pinned size that differs from the published one is a
+#                   re-issued file or a bad download, and both need a human.
 # evidence          Every Tier A up_hash appears verbatim in the saved artifact
 #                   named by up_hash_copy. This is what makes the manifest's
 #                   upstream column evidence rather than assertion, and it works
@@ -75,7 +79,9 @@
 #                   (49/42/26) with no library or timsTOF run; its --help size
 #                   matches the PRIDE records; and, against a stub DOWNLOAD.sh
 #                   in the sandbox, its pin merge only turns PENDING into an
-#                   observation unless --force is given.
+#                   observation unless --force is given. The merge fixture
+#                   resets the raw-depth rows of its sandbox copy to PENDING, so
+#                   it does not depend on how much the real manifest has pinned.
 
 set -uo pipefail
 
@@ -179,7 +185,7 @@ awk -F'\t' -v canon="$(head -n 1 "$CANON_HEADER")" -v root="$SCRIPT_DIR" '
   NF==0 { next }
   {
     n++
-    if (NF != 12) { printf "line %d: %d fields, expected 12\n", NR, NF; e=1 }
+    if (NF != 13) { printf "line %d: %d fields, expected 13\n", NR, NF; e=1 }
     if ($1 <= prev && prev != "") { printf "line %d: not sorted by path (%s after %s)\n", NR, $1, prev; e=1 }
     prev = $1
     if (seen[$1]++) { printf "line %d: duplicate path %s\n", NR, $1; e=1 }
@@ -187,7 +193,7 @@ awk -F'\t' -v canon="$(head -n 1 "$CANON_HEADER")" -v root="$SCRIPT_DIR" '
     if ($2 != "A" && $2 != "B" && $2 != "C") { printf "line %d: bad tier %s\n", NR, $2; e=1 }
     if ($3 != "default" && $3 != "supplementary" && $3 != "raw") { printf "line %d: bad depth %s\n", NR, $3; e=1 }
     depths[$3]++
-    for (i = 1; i <= 12; i++) if ($i == "") { printf "line %d: empty field %d\n", NR, i; e=1 }
+    for (i = 1; i <= 13; i++) if ($i == "") { printf "line %d: empty field %d\n", NR, i; e=1 }
     p = ($4 == "PENDING") + ($5 == "PENDING") + ($6 == "PENDING")
     if (p != 0 && p != 3) { printf "line %d: half-PENDING local triple\n", NR; e=1 }
     if (p == 0) {
@@ -200,28 +206,32 @@ awk -F'\t' -v canon="$(head -n 1 "$CANON_HEADER")" -v root="$SCRIPT_DIR" '
       pend++
       if (exists($1)) { printf "line %d: on disk but PENDING (UNPINNED): %s\n", NR, $1; e=1 }
     }
-    want = ($7 == "md5") ? 32 : ($7 == "sha1") ? 40 : ($7 == "sha256") ? 64 : 0
+    if ($7 != "-" && $7 !~ /^[1-9][0-9]*$/) { printf "line %d: up_bytes is neither a positive integer nor \"-\"\n", NR; e=1 }
+    if ($2 == "B" && $7 == "-") { printf "line %d: tier B row without up_bytes\n", NR; e=1 }
+    if (p == 0 && $7 != "-" && $4 != $7) { printf "line %d: pinned bytes %s differ from up_bytes %s: %s\n", NR, $4, $7, $1; e=1 }
+    if (p == 0 && $7 != "-") sized++
+    want = ($8 == "md5") ? 32 : ($8 == "sha1") ? 40 : ($8 == "sha256") ? 64 : 0
     if ($2 == "A") {
-      if (want == 0) { printf "line %d: tier A unknown up_algo %s\n", NR, $7; e=1 }
-      else if ($8 !~ /^[0-9a-f]+$/ || length($8) != want) { printf "line %d: up_hash wrong length for %s\n", NR, $7; e=1 }
-      if ($8 == $5) { printf "line %d: up_hash reuses the local sha256 pin\n", NR; e=1 }
-      if ($9 !~ /^https:\/\//) { printf "line %d: up_hash_src is not https\n", NR; e=1 }
-      if ($10 == "-") { printf "line %d: tier A without a saved artifact\n", NR; e=1 }
-      if ($8 ~ /^(-|TBD|PENDING|UNKNOWN|PLACEHOLDER)/) { printf "line %d: tier A placeholder up_hash\n", NR; e=1 }
-      if ($11 !~ /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) { printf "line %d: bad up_fetched\n", NR; e=1 }
+      if (want == 0) { printf "line %d: tier A unknown up_algo %s\n", NR, $8; e=1 }
+      else if ($9 !~ /^[0-9a-f]+$/ || length($9) != want) { printf "line %d: up_hash wrong length for %s\n", NR, $8; e=1 }
+      if ($9 == $5) { printf "line %d: up_hash reuses the local sha256 pin\n", NR; e=1 }
+      if ($10 !~ /^https:\/\//) { printf "line %d: up_hash_src is not https\n", NR; e=1 }
+      if ($11 == "-") { printf "line %d: tier A without a saved artifact\n", NR; e=1 }
+      if ($9 ~ /^(-|TBD|PENDING|UNKNOWN|PLACEHOLDER)/) { printf "line %d: tier A placeholder up_hash\n", NR; e=1 }
+      if ($12 !~ /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) { printf "line %d: bad up_fetched\n", NR; e=1 }
     }
     if ($2 == "C") {
-      if ($7 != "TIER_C_NO_UPSTREAM_HASH") { printf "line %d: tier C up_algo sentinel wrong\n", NR; e=1 }
-      for (i = 8; i <= 11; i++) if ($i != "-") { printf "line %d: tier C upstream column %d not \"-\"\n", NR, i; e=1 }
+      if ($8 != "TIER_C_NO_UPSTREAM_HASH") { printf "line %d: tier C up_algo sentinel wrong\n", NR; e=1 }
+      for (i = 9; i <= 12; i++) if ($i != "-") { printf "line %d: tier C upstream column %d not \"-\"\n", NR, i; e=1 }
     }
-    if ($12 !~ /^https:\/\//) { printf "line %d: url is not https\n", NR; e=1 }
+    if ($13 !~ /^https:\/\//) { printf "line %d: url is not https\n", NR; e=1 }
   }
   END {
     if (n == 0) { print "zero records"; e=1 }
     if (depths["default"] == 0) { print "no row at depth default — the no-argument invocation would be a usage error"; e=1 }
     if (e) exit 1
-    printf "records=%d pinned=%d pending=%d default=%d supplementary=%d raw=%d\n", \
-      n, pinned, pend, depths["default"], depths["supplementary"]+0, depths["raw"]+0
+    printf "records=%d pinned=%d pending=%d default=%d supplementary=%d raw=%d; %d pinned sizes equal up_bytes\n", \
+      n, pinned, pend, depths["default"], depths["supplementary"]+0, depths["raw"]+0, sized+0
   }
 ' "$MANIFEST" >"$SANDBOX/mstruct.txt" 2>&1
 if [[ $? -eq 0 ]]; then
@@ -245,7 +255,7 @@ done
 
 sect "evidence check (Tier A up_hash present in its saved artifact)"
 missing_art=0; missing_val=0; checked=0
-while IFS=$'\t' read -r path tier _depth _bytes _sha _pd _ua uhash _us ucopy _uf _url; do
+while IFS=$'\t' read -r path tier _depth _bytes _sha _pd _ub _ua uhash _us ucopy _uf _url; do
   [[ "$path" == \#* || -z "$path" ]] && continue
   [[ "$tier" == 'A' ]] || continue
   checked=$((checked+1))
@@ -283,15 +293,17 @@ fixture() { # <label> <row producer>
 mut() { printf '%s\n' "$GOOD_ROW" | awk -F'\t' -v f="$1" -v v="$2" 'BEGIN{OFS="\t"}{$f=v; print}'; }
 fixture "unexpected tier letter"                    mut 2 Z
 fixture "unexpected depth value"                    mut 3 someday
-fixture "Tier A up_hash of the wrong length"        mut 8 abcdef
-fixture "Tier A up_hash set to a placeholder"       mut 8 '-'
-fixture "Tier A up_hash set to PENDING"             mut 8 PENDING
-fixture "unsupported upstream algorithm"            mut 7 crc32
-fixture "non-https up_hash_src"                     mut 9 'http://example.invalid/x'
-fixture "Tier A without a saved artifact"           mut 10 '-'
-fixture "malformed up_fetched"                      mut 11 'yesterday'
-row_pin_as_up() { printf '%s\n' "$GOOD_ROW" | awk -F'\t' 'BEGIN{OFS="\t"}{$5=$8; print}'; }
-row_http_url()  { printf '%s\n' "$GOOD_ROW" | awk -F'\t' 'BEGIN{OFS="\t"}{sub(/^https:/,"http:",$12); print}'; }
+fixture "non-numeric up_bytes"                      mut 7 'about-2GB'
+fixture "zero up_bytes"                             mut 7 0
+fixture "Tier A up_hash of the wrong length"        mut 9 abcdef
+fixture "Tier A up_hash set to a placeholder"       mut 9 '-'
+fixture "Tier A up_hash set to PENDING"             mut 9 PENDING
+fixture "unsupported upstream algorithm"            mut 8 crc32
+fixture "non-https up_hash_src"                     mut 10 'http://example.invalid/x'
+fixture "Tier A without a saved artifact"           mut 11 '-'
+fixture "malformed up_fetched"                      mut 12 'yesterday'
+row_pin_as_up() { printf '%s\n' "$GOOD_ROW" | awk -F'\t' 'BEGIN{OFS="\t"}{$5=$9; print}'; }
+row_http_url()  { printf '%s\n' "$GOOD_ROW" | awk -F'\t' 'BEGIN{OFS="\t"}{sub(/^https:/,"http:",$13); print}'; }
 fixture "sha256 pin reused as the upstream hash"    row_pin_as_up
 fixture "non-https retrieval url"                   row_http_url
 
@@ -375,7 +387,7 @@ else
   bad "MANIFEST.tsv written outside write_pin()/refresh_manifest() ($rw total, $inw + $inr accounted for)"
 fi
 # write_pin must only ever touch the local-observation triple, fields 4-6.
-if awk '/^write_pin\(\)/,/^}/' "$DL" | grep -Eq '\$(7|8|9|1[0-2]) *='; then
+if awk '/^write_pin\(\)/,/^}/' "$DL" | grep -Eq '\$(7|8|9|1[0-3]) *='; then
   bad "write_pin() assigns a field outside the local-observation triple"
 else
   ok "write_pin() assigns only fields 4-6 (bytes, sha256, pinned_date)"
@@ -405,7 +417,7 @@ fi
 sect "sandbox dry-run writes nothing"
 DRYM="$SANDBOX/dry.tsv"
 { printf '%s\n' "$HDR"
-  awk -F'\t' 'BEGIN{OFS="\t"} NR>1 && $3=="default" {$12="https://example.invalid/d"; print; exit}' "$MANIFEST"
+  awk -F'\t' 'BEGIN{OFS="\t"} NR>1 && $3=="default" {$13="https://example.invalid/d"; print; exit}' "$MANIFEST"
 } > "$DRYM"
 mkdir -p "$SANDBOX/dryroot"
 before=$(find "$SANDBOX/dryroot" | wc -l)
@@ -458,7 +470,7 @@ else
   fi
   # Its pin merge is the one place it writes MANIFEST.tsv; like write_pin() it
   # may assign only the local-observation triple, fields 4-6.
-  if awk '/^merge_pins\(\)/,/^}/' "$PR" | grep -Eq '\$(1|2|3|7|8|9|1[0-2]) *= *[^=]'; then
+  if awk '/^merge_pins\(\)/,/^}/' "$PR" | grep -Eq '\$(1|2|3|7|8|9|1[0-3]) *= *[^=]'; then
     bad "merge_pins() assigns a field outside the local-observation triple"
   else
     ok "merge_pins() assigns only fields 4-6 (bytes, sha256, pinned_date)"
@@ -518,7 +530,12 @@ print(f"{sum(size[n] for n in names) / 2**30:.1f}")
   # like a partial download.
   PRB="$SANDBOX/prbundle"
   mkdir -p "$PRB/PXD022198"
-  cp "$PR" "$MANIFEST" "$PRB/"
+  cp "$PR" "$PRB/"
+  # Start from raw-depth rows in their planned state, whatever the real
+  # manifest has pinned since, so the stub's two pins are always new ones.
+  PRBASE="$SANDBOX/prbase.tsv"
+  awk -F'\t' -v OFS='\t' 'NR > 1 && $3 == "raw" { $4 = "PENDING"; $5 = "PENDING"; $6 = "PENDING" } { print }' "$MANIFEST" > "$PRBASE"
+  cp "$PRBASE" "$PRB/MANIFEST.tsv"
   cp "$SCRIPT_DIR/PXD022198/Annotation_file.csv" "$PRB/PXD022198/"
   chmod a-w "$PRB/MANIFEST.tsv"
   cat > "$PRB/DOWNLOAD.sh" <<'STUB'
@@ -531,8 +548,8 @@ STUB
   ( cd "$PRB" && STUB_HEX="$(hex b)" bash ./DOWNLOAD_PATIENT_RUNS.sh ) >/dev/null 2>&1; st=$?
   first2="$(awk -F'\t' 'NR > 1 && $4 != "PENDING"' "$PRB/MANIFEST.tsv" | wc -l)"
   same_rest="$(diff <(awk -F'\t' 'NR > 1 && $4 == "PENDING"' "$PRB/MANIFEST.tsv") \
-                    <(awk -F'\t' 'NR > 1 && $4 == "PENDING"' "$MANIFEST" | tail -n +3) >/dev/null && echo y)"
-  if [[ $st -eq 4 && "$first2" -eq $(( $(awk -F'\t' 'NR > 1 && $4 != "PENDING"' "$MANIFEST" | wc -l) + 2 )) && "$same_rest" == y && ! -w "$PRB/MANIFEST.tsv" ]]; then
+                    <(awk -F'\t' 'NR > 1 && $4 == "PENDING"' "$PRBASE" | tail -n +3) >/dev/null && echo y)"
+  if [[ $st -eq 4 && "$first2" -eq $(( $(awk -F'\t' 'NR > 1 && $4 != "PENDING"' "$PRBASE" | wc -l) + 2 )) && "$same_rest" == y && ! -w "$PRB/MANIFEST.tsv" ]]; then
     ok "pins merge back PENDING -> observed, other rows untouched, exit code passed through, manifest stays read-only"
   else
     bad "pin merge: exit $st, pinned rows $first2, other rows unchanged=${same_rest:-n}"
@@ -591,14 +608,14 @@ if [[ "${DATASET_TEST_NETWORK:-0}" != '1' ]]; then
   skip "  corruption of a sandbox copy is detected by --verify-only"
 else
   sect "network: authority check"
-  mapfile -t SRCS < <(tail -n +2 "$MANIFEST" | awk -F'\t' '$9 != "-" {print $9}' | sort -u)
+  mapfile -t SRCS < <(tail -n +2 "$MANIFEST" | awk -F'\t' '$10 != "-" {print $10}' | sort -u)
   for s in "${SRCS[@]}"; do
     f="$SANDBOX/auth.$(printf '%s' "$s" | tr -c 'A-Za-z0-9' '_')"
     if ! curl -fsL -m 300 --retry 3 --retry-delay 5 --proto '=https' --tlsv1.2 -o "$f" -- "$s"; then
       bad "could not re-fetch $s"; continue
     fi
     n=0; miss=0
-    while IFS=$'\t' read -r path tier _d _b _s2 _pd _ua uhash usrc _uc _uf _u; do
+    while IFS=$'\t' read -r path tier _d _b _s2 _pd _ub _ua uhash usrc _uc _uf _u; do
       [[ "$path" == \#* || -z "$path" ]] && continue
       [[ "$tier" == 'A' && "$usrc" == "$s" ]] || continue
       n=$((n+1))
@@ -610,7 +627,7 @@ else
 
   sect "network: reachability"
   nbad=0; ntot=0
-  while IFS=$'\t' read -r path _t _d _b _s _pd _ua _uh _us _uc _uf url; do
+  while IFS=$'\t' read -r path _t _d _b _s _pd _ub _ua _uh _us _uc _uf url; do
     [[ "$path" == \#* || -z "$path" ]] && continue
     ntot=$((ntot+1))
     code="$(curl -fsIL -m 120 --retry 2 --retry-delay 3 --proto '=https' --tlsv1.2 -o /dev/null -w '%{http_code}' -- "$url" 2>/dev/null || echo 000)"
@@ -659,7 +676,7 @@ else
   sect "network: 404 handling"
   FOURM="$SANDBOX/four.tsv"
   { printf '%s\n' "$HDR"
-    awk -F'\t' -v OFS='\t' -v p="$SMALL" '$1==p {$4="PENDING"; $5="PENDING"; $6="PENDING"; $12=$12".definitely-not-here"; print}' "$MANIFEST"
+    awk -F'\t' -v OFS='\t' -v p="$SMALL" '$1==p {$4="PENDING"; $5="PENDING"; $6="PENDING"; $13=$13".definitely-not-here"; print}' "$MANIFEST"
   } > "$FOURM"
   mkdir -p "$SANDBOX/fourroot"
   ( cd "$SANDBOX" && bash "$DL" default --manifest "$FOURM" --root "$SANDBOX/fourroot" >/dev/null 2>&1 ); st=$?
