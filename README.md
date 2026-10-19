@@ -67,9 +67,11 @@ Spectronaut session archive. Third, one experimental-design annotation file per
 deposit, mapping MS run name to patient sample.
 
 Depth `default` has been retrieved and verified: all 7 files are on disk, each
-checked against its publisher SHA-1 before its pin was written. All 187
-`raw`-depth rows are planned, with `bytes`, `sha256` and `pinned_date` all
-`PENDING`, and none of those files is held locally.
+checked against its publisher SHA-1 before its pin was written. Of the 187
+`raw`-depth rows, 117 are pinned: the patient-sample runs, fetched with
+`./DOWNLOAD_PATIENT_RUNS.sh` on 2026-10-13/14 on a different machine from the
+one this documentation was written on. The other 70 are planned, with `bytes`,
+`sha256` and `pinned_date` all `PENDING`.
 
 `supplementary-data/bloodbld2020009741-suppl1.pdf` is the article's Supplement 1.
 Its Table S1 lists each patient's age, sex, IGHV status, trisomy 12, WBC count,
@@ -90,12 +92,13 @@ cumulative totals are 7 files / 552.2 MiB at `default`, the same 7 at
 | --- | --- | --- | --- | --- |
 | `default` | the analysis-ready tables: the Spectronaut precursor and protein reports, the three per-batch protein-quantification reports, and both annotation files | 7 | 552.2 MiB | **yes**, 2026-08-20 |
 | `supplementary` | supplementary and secondary files. Neither deposit contains any, so this depth adds nothing and resolves to the same 7 files as `default` | 0 | 0 B | **yes** — identical to `default` |
-| `raw` | the bulk inputs: 185 raw MS acquisitions, the exported Spectronaut spectral library, and the 24.2 GiB `.sne` session archive | 187 | 583.3 GiB | no — `./DOWNLOAD.sh raw` |
+| `raw` | the bulk inputs: 185 raw MS acquisitions, the exported Spectronaut spectral library, and the 24.2 GiB `.sne` session archive | 187 | 583.3 GiB | partly — the 117 patient runs (330.4 GiB) via `./DOWNLOAD_PATIENT_RUNS.sh`; `./DOWNLOAD.sh raw` fetches the other 70 |
 
 Sizes are the byte counts published in the PRIDE file records, read from the
-saved API artifacts under `provenance/upstream/`. They are upstream claims, not
-local measurements — `MANIFEST.tsv`'s `bytes` column holds a local observation
-and is `PENDING` until a file is retrieved.
+saved API artifacts under `provenance/upstream/` and recorded per file in
+`MANIFEST.tsv`'s `up_bytes` column. They are upstream claims, not local
+measurements — the `bytes` column holds the local observation and is `PENDING`
+until a file is retrieved. Every pinned row's `bytes` equals its `up_bytes`.
 
 `./DOWNLOAD_PATIENT_RUNS.sh` fetches a narrower set than any depth: the 117
 patient-sample `.raw` files of PXD022198 and nothing else, 330.4 GiB. It reads
@@ -405,16 +408,17 @@ Caveats worth knowing before you commit compute:
 All 194 files are Tier A: the PRIDE file-metadata API publishes a per-file SHA-1
 for every one of them, fetched on 2026-08-20 and saved verbatim under
 `provenance/upstream/`, and that hash is the gate `DOWNLOAD.sh` applies before a
-downloaded file is installed. No file is Tier B or Tier C. 7 of the 194 rows are
-pinned — the `default` depth, each verified against its publisher SHA-1 on
-2026-08-20 before its `bytes`/`sha256`/`pinned_date` triple was written. The
-other 187 are `PENDING`.
+downloaded file is installed. No file is Tier B or Tier C. 124 of the 194 rows
+are pinned, each verified against its publisher SHA-1 before its
+`bytes`/`sha256`/`pinned_date` triple was written: the 7 `default`-depth files
+on 2026-08-20, and the 117 patient-sample runs on 2026-10-13/14. The other 70
+are `PENDING`.
 
-`--verify-only` is therefore clean at every depth: 7 `OK` and 0 problems at
-`default`, and at `raw` the 187 unfetched rows report `NOT_YET_DOWNLOADED`,
-which is a match between manifest and disk rather than a failure. There is no
-file on disk that the manifest has not recorded, and no pinned row whose file is
-absent.
+`--verify-only` checks the copy it runs next to. Where the patient runs are held
+it reports 124 `OK` at `raw`, and the 70 unfetched rows as `NOT_YET_DOWNLOADED`,
+which is a match between manifest and disk rather than a failure. A clone that
+holds only the `default` depth reports the 117 patient runs as `MISSING`:
+pinned, but not on this disk.
 
 Data files are set read-only to prevent accidental modification. To edit one
 deliberately:

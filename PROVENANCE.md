@@ -63,13 +63,16 @@ the next reader needs to know it was looked at.
 | PRIDE Aspera transfer endpoints | no | n/a | An alternative transport for the same bytes, not a separate source. `DOWNLOAD.sh` uses HTTPS only, so the manifest records only HTTPS URLs |
 
 Depths actually downloaded so far: `default` (and therefore `supplementary`,
-which resolves to the same 7 files), on 2026-08-20. `raw` remains planned — its
-187 rows are `PENDING` and `./DOWNLOAD.sh raw` will fetch them, 583.9 GiB at the
+which resolves to the same 7 files), on 2026-08-20. At `raw`, the 117
+patient-sample runs of PXD022198 were fetched with `./DOWNLOAD_PATIENT_RUNS.sh`
+on 2026-10-13/14, on a different machine from the one this documentation was
+written on, and their pins were committed from there. The other 70 `raw` rows
+are `PENDING` and `./DOWNLOAD.sh raw` will fetch them, 252.9 GiB at the
 archive's observed ~1.8 MB/s.
 
-No `raw`-depth file is held locally. One of them, the exported spectral library,
-was briefly on disk under an earlier depth assignment and was deleted rather
-than left unpinned; see the integrity record.
+One of those 70, the exported spectral library, was briefly on disk under an
+earlier depth assignment and was deleted rather than left unpinned; see the
+integrity record.
 
 ## File descriptions
 
@@ -338,3 +341,5 @@ One row per change to `MANIFEST.tsv`, each tied to the commit that made it.
 | --- | --- | --- | --- |
 | 2026-08-21 | `a92c1f6` | Created with 194 Tier A rows covering PXD022216 (55) and PXD022198 (139), all in the planned state: `bytes`, `sha256` and `pinned_date` all `PENDING`. Depths assigned: 7 `default`, 0 `supplementary`, 187 `raw`. Upstream SHA-1 values transcribed from three PRIDE v3 file-metadata API pages saved under `provenance/upstream/` | Initial documentation of the deposits, committed before any download so that the plan and the observation are separately attributable |
 | 2026-08-21 | `366e5d3` | `bytes`, `sha256` and `pinned_date` written for the 7 `default`-depth rows. No other field changed on any row | The `default`-depth files were verified against their publisher SHA-1, so their local observations became recordable |
+| 2026-10-19 | `8a37a3b` | `bytes`, `sha256` and `pinned_date` written for the 117 patient-sample runs of PXD022198 (batch1 49, batch2 42, batch3 26), pinned 2026-10-13/14. Only those three fields changed, each from `PENDING` | The runs were retrieved with `./DOWNLOAD_PATIENT_RUNS.sh` and passed their publisher SHA-1, on a different machine; every pinned size equals the size PRIDE states |
+| 2026-10-19 | `d34e5e1` | `up_bytes` column inserted after `pinned_date`, filled for all 194 rows from `fileSizeBytes` in the saved PRIDE v3 file records. No other field changed | The dataset-documentation skill's manifest format gained the column on 2026-08-25; it records the source-stated size, which a Tier B row is checked against and the depth totals are computed from |
