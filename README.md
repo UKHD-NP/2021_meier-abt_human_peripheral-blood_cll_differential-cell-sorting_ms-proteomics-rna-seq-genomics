@@ -79,6 +79,14 @@ survival, treatment, cohort and batch, so it is the clinical key for the runs.
 `DOWNLOAD.sh` cannot fetch it; get it from the *Blood* article page by hand and
 check it against the sha256 under "Manually obtained files" in PROVENANCE.md.
 
+`PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/result.parquet` is an
+in-house re-search of the 117 PXD022198 patient-sample runs with DIA-NN 2.3.1 in
+library-free mode: a single DIA-NN long-format report covering all three
+batches, where the deposit holds three per-batch Spectronaut reports. It is not
+part of either deposit and no script can fetch it. Its checksum, search inputs
+and the search settings readable from the output are under "Internal
+provenance" in PROVENANCE.md, and its statistics are below.
+
 Files are grouped into three download depths. `./DOWNLOAD.sh` with no argument
 fetches `default`; pass `supplementary` or `raw` to go deeper. Depth is
 cumulative, so `raw` fetches everything.
@@ -143,6 +151,9 @@ subset of `DOWNLOAD.sh`'s (`--help`, `--list-flags`, `--dry-run`,
     PXD022198/20201112_*_CLL_screen2_Pool*_Diseased.raw                                    6 files    2.8 GiB  raw
     PXD022198/20210107_*_CLL_CD19selected_[0-9]*_Diseased.raw                             42 files  128.1 GiB  raw
     PXD022198/20210107_*_CLL_CD19selected_Pool*.raw                                        6 files    3.7 GiB  raw
+
+  PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/   in-house DIA-NN re-search — not in the manifest
+    result.parquet                                                                         1 file   870.8 MiB
 ```
 
 ## Data statistics
@@ -291,6 +302,94 @@ awk -F'\t' 'NR>1 { v=$13; gsub(/\r/,"",v); if (v+0==0 && v!="NaN" && v!="") z++ 
   PXD022216/20200727_103309_200725_cll_diaPASEF_direct_Report_Peptide_long.tsv
 ```
 
+**The in-house DIA-NN re-search**,
+`PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/result.parquet`, is a
+long-format report — one row per precursor per run, 8 161 112 rows — over the
+117 patient-sample runs, one run per patient. As for the Spectronaut files,
+cells is 117 x unique features and completeness is observed (run, feature)
+pairs / cells. "Mean per run" is the number of distinct features observed in a
+run, averaged over the 117 runs.
+
+| Level | Feature identity | Unique features | Mean per run | Per-run range | Cells | Completeness |
+| --- | --- | --- | --- | --- | --- | --- |
+| precursor | `Precursor.Id` | 156 310 | 69 753.1 | 28 684–92 884 | 18 288 270 | 44.62% |
+| modified peptide | `Modified.Sequence` | 121 374 | 57 746.1 | 26 534–76 489 | 14 200 758 | 47.58% |
+| stripped peptide | `Stripped.Sequence` | 121 374 | 57 746.1 | 26 534–76 489 | 14 200 758 | 47.58% |
+| protein group | `Protein.Group` | 8 696 | 6 156.0 | 4 294–7 196 | 1 017 432 | 70.79% |
+| gene group | `Genes`, non-empty | 8 683 | 6 148.2 | 4 289–7 185 | 1 015 911 | 70.81% |
+
+These are counts at the filtering the file already carries: precursors at
+`Q.Value` ≤ 0.01 and `Lib.Q.Value` ≤ 0.01, protein and gene groups unfiltered.
+Applying a run-specific 1% group-level cut as well — a group counts in a run
+only where its `PG.Q.Value` (or `GG.Q.Value`) is ≤ 0.01 there — gives:
+
+| Level | Unique features | Mean per run | Per-run range | Cells | Completeness |
+| --- | --- | --- | --- | --- | --- |
+| protein group, `PG.Q.Value` ≤ 0.01 | 7 906 | 5 907.0 | 4 054–6 925 | 925 002 | 74.71% |
+| gene group, `GG.Q.Value` ≤ 0.01 | 7 894 | 5 900.4 | 4 051–6 914 | 923 598 | 74.74% |
+
+Modified and stripped peptides coincide exactly because the only modification
+in the file is fixed carbamidomethylation of cysteine, so each stripped
+sequence has exactly one modified form. Protein and gene groups are counted as
+DIA-NN's `;`-joined strings verbatim; split into single identifiers they hold
+8 799 UniProt accessions and 8 785 gene symbols. 1 175 rows have an empty
+`Genes` field and are left out of the gene-group level.
+
+Missing-value convention: a missing cell is an absent row, as in the
+Spectronaut precursor report. The quantity columns carry no null or `NaN`, but
+they do carry zeros — 4 rows in `Precursor.Quantity`, 1 158 (run, protein group)
+pairs in `PG.MaxLFQ` and 1 156 (run, gene group) pairs in `Genes.MaxLFQ`. The
+file does not say whether a zero means "not quantified", so both readings were
+counted. Counting zero as missing changes only the protein and gene levels, and
+only slightly: 8 682 protein groups (14 are only ever quantified as zero) at a
+mean 6 146.1 per run, 8 669 gene groups at a mean 6 138.3, with completeness
+unchanged to two decimals (70.79% and 70.81%). The 4 zero precursor rows leave
+every precursor and peptide figure unchanged.
+
+Computed with DuckDB v1.5.0, from the directory root; the per-level totals,
+means and completeness of the first table were reproduced independently with
+pyarrow 23.0.1 and pandas 2.3.2:
+
+```bash
+duckdb <<'SQL'
+CREATE VIEW r AS FROM 'PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/result.parquet';
+-- What the report already filters on, and what it carries.
+SELECT count(*) AS n_rows, count(DISTINCT Run) AS runs, sum(Decoy) AS decoys,
+       max("Q.Value") AS max_q, max("Lib.Q.Value") AS max_lib_q,
+       max("PG.Q.Value") AS max_pg_q, max("GG.Q.Value") AS max_gg_q,
+       sum("Precursor.Quantity" = 0) AS zero_precursor_qty, sum(Genes = '') AS no_gene_rows,
+       min("Precursor.Charge") AS z_min, max("Precursor.Charge") AS z_max,
+       min(length("Stripped.Sequence")) AS len_min, max(length("Stripped.Sequence")) AS len_max
+FROM r;
+SELECT DISTINCT unnest(regexp_extract_all("Modified.Sequence", '\(([^)]*)\)', 1)) AS modification FROM r;
+-- One row per (level, run, feature). q is the level's quantity, fq its own q-value.
+CREATE TEMP TABLE obs AS
+          SELECT '1 precursor' AS lvl, Run, "Precursor.Id" AS f, max("Precursor.Quantity") AS q, NULL::FLOAT AS fq FROM r GROUP BY ALL
+UNION ALL SELECT '2 modified peptide', Run, "Modified.Sequence", max("Precursor.Quantity"), NULL FROM r GROUP BY ALL
+UNION ALL SELECT '3 stripped peptide', Run, "Stripped.Sequence", max("Precursor.Quantity"), NULL FROM r GROUP BY ALL
+UNION ALL SELECT '4 protein group', Run, "Protein.Group", max("PG.MaxLFQ"), min("PG.Q.Value") FROM r GROUP BY ALL
+UNION ALL SELECT '5 gene group', Run, Genes, max("Genes.MaxLFQ"), min("GG.Q.Value") FROM r WHERE Genes <> '' GROUP BY ALL;
+CREATE MACRO summary(keep) AS TABLE
+  WITH o AS (FROM obs WHERE keep),
+       per_run AS (SELECT lvl, Run, count(*) AS n FROM o GROUP BY ALL),
+       total AS (SELECT lvl, count(DISTINCT f) AS features, count(*) AS pairs FROM o GROUP BY ALL)
+  SELECT lvl, features, round(avg(n), 1) AS mean_per_run, min(n) AS min_run, max(n) AS max_run,
+         pairs, 117 * features AS cells, round(100 * pairs / (117 * features), 2) AS completeness_pct
+  FROM total JOIN per_run USING (lvl) GROUP BY ALL ORDER BY lvl;
+FROM summary(true);                         -- as stored: a row present is an observation
+FROM summary(q > 0);                        -- zero quantity counted as missing
+FROM summary(fq <= 0.01) WHERE lvl >= '4';  -- protein / gene groups at run-specific q <= 0.01
+-- Groups split into single accessions / gene symbols.
+SELECT lvl, count(DISTINCT a) AS single_ids
+FROM (SELECT lvl, unnest(string_split(f, ';')) AS a FROM obs WHERE lvl >= '4') GROUP BY ALL ORDER BY lvl;
+SQL
+```
+
+These figures are not comparable one-to-one with the Spectronaut protein
+reports above: those split the cohort into three per-batch files, include runs
+that were never deposited, were searched against project-specific spectral
+libraries rather than library-free, and apply their own protein-level FDR.
+
 **Non-matrix files.** The two annotation files are sample tables, so they get row
 and column counts and nothing more. `PXD022216/Annotation_file_timsTOF.txt`:
 50 data rows x 14 columns, tab-separated. `PXD022198/Annotation_file.csv`: not
@@ -397,6 +496,13 @@ Caveats worth knowing before you commit compute:
   `PXD022198/Annotation_file.csv` has no blank cell in its 117 sample rows and
   writes `NA` explicitly where a call is absent. Reading a blank as wild-type in
   the timsTOF annotation would invent genotypes.
+- **The DIA-NN re-search is filtered at precursor level only.** Its protein
+  and gene groups carry q-values up to 1.0, so a protein matrix built from it
+  as-is includes groups that would fail any protein-level FDR; filter on
+  `PG.Q.Value` / `Lib.PG.Q.Value` (or `GG.Q.Value`) first. Its `PG.MaxLFQ` and
+  `Genes.MaxLFQ` contain zeros, which should not be log-transformed as
+  measurements. Its run names are the deposit's `.raw` names without the
+  extension, so it joins to `PXD022198/Annotation_file.csv` directly.
 - **`.d.zip` needs unzipping before use**, and a decompressed Bruker `.d` folder
   is substantially larger than its archive. Budget disk accordingly.
 - **The published `.sne` is a Spectronaut session archive**, tied to the
@@ -448,4 +554,5 @@ why. The data files themselves are not versioned — the manifest and
 | `TEST_DOWNLOAD.sh` | check that `DOWNLOAD.sh` and `DOWNLOAD_PATIENT_RUNS.sh` are correct and safe |
 | `.gitignore` | keeps the data files out of version control |
 | `supplementary-data/` | the article's Supplement 1 (patient metadata), obtained by hand; git-ignored, checksum in PROVENANCE.md |
+| `PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/` | in-house DIA-NN 2.3.1 library-free re-search of the 117 patient runs; git-ignored, checksum in PROVENANCE.md |
 | `provenance/upstream/` | upstream checksum artifacts, saved verbatim as evidence |

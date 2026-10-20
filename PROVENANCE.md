@@ -43,6 +43,43 @@ Ethics Committee approval for the Barcelona samples). CC0 on the deposit does no
 by itself settle what secondary use of human-subject data is permissible in your
 jurisdiction or under your institution's rules.
 
+## Internal provenance
+
+One in-house file is held alongside the deposits: a DIA-NN re-search of the
+PXD022198 patient-sample runs, made locally rather than by the study authors. It
+is not part of either deposit, the CC0 statement above does not cover it, and
+`DOWNLOAD.sh` cannot retrieve it. It is therefore not in `MANIFEST.tsv` — whose
+structural gate requires an https retrieval URL on every row — and is
+git-ignored like the deposit data. Its checksum below is a local pin, Tier C in
+the manifest's terms: it detects later change to this copy and says nothing
+about origin. The search *inputs* are Tier A, since every run it quantifies is a
+pinned manifest row verified against its PRIDE SHA-1.
+
+| Field | Value |
+| --- | --- |
+| Path | `PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/result.parquet` |
+| What it is | DIA-NN main report, long format, Apache Parquet: one row per precursor per run, 8 161 112 rows x 71 columns. Statistics in README.md |
+| Bytes | 913108806 |
+| sha256 | `ed744647346a549fc5d0c047f4bd9af53e84866110fd4fbd47f129a2f1783097` |
+| Pinned | 2026-10-20 |
+| Search software | DIA-NN 2.3.1, library-free search, as stated by the operator and in the directory name. The file itself carries no version or parameter record |
+| Search inputs | `derived:` its `Run` column names exactly the 117 patient-sample runs of PXD022198 — batch 1 (49), batch 2 (42) and batch 3 (26) — and no other run: the `.raw` names of the 117 pinned patient rows in `MANIFEST.tsv`, minus the extension. None of the 18 library runs is included |
+| Search parameters read from the output | `derived:` carbamidomethylation (`UniMod:4`) is the only modification present and sits on every cysteine (1 795 967 of 1 795 967), so it was fixed and no variable modification was reported; precursor charge 1–4; stripped peptide length 7–30; precursor *m/z* 399.5–1000.5; no decoy rows; `IM` is 0 throughout |
+| Filtering in the file | `derived:` precursors are filtered at run-specific `Q.Value` ≤ 0.01 and library `Lib.Q.Value` ≤ 0.01. Protein and gene groups are **not** filtered — `PG.Q.Value` and `GG.Q.Value` reach 1.0 and `Lib.PG.Q.Value` reaches 0.405 |
+| Normalisation | `derived:` enabled. `Precursor.Normalised` differs from `Precursor.Quantity` in all but 4 rows, with `Normalisation.Factor` between 0.066 and 4.04 |
+| Protein database | <FILL IN: FASTA file, source and release, contaminant handling> |
+| Full search settings | <FILL IN: DIA-NN command line or log — mass accuracies, missed cleavages, MBR, protein inference, cross-run normalisation mode> |
+| Responsible person | Ian Dirk Fichtner, iandirk.fichtner@dkfz-heidelberg.de |
+| Originating group | <FILL IN: originating group> |
+| Date generated | Directory name: 2026-10-15. File modification time: 2026-10-19 09:44 +0200 |
+| Location generated | <FILL IN: machine or cluster that ran the search> |
+| Embargo status | <FILL IN: embargo status> |
+| Planned deposit target | <FILL IN: deposit target, if any> |
+
+The search output exists only as this copy unless another is recorded above. It
+can be regenerated from the 117 pinned raw runs once the protein database and
+search settings are filled in; until then it cannot.
+
 ## Sources considered and download depth
 
 Every file source weighed for inclusion, whether it was included, and at which
@@ -58,6 +95,7 @@ the next reader needs to know it was looked at.
 | PRIDE PXD022216 — exported Spectronaut spectral library `200723_CLL_library_direct.tsv` | yes | `raw` | A spectral library, which the skill's file-type rule places at `raw` depth. It is a fragment-ion assay list, not a sample × feature matrix |
 | PRIDE PXD022216 — Spectronaut `.sne` session archive | yes | `raw` | A 24.2 GiB analysis workspace that needs Spectronaut itself to open and is coupled to the version that wrote it. Bulk input, not an analysis-ready table |
 | Supplementary tables and figures of the *Blood* article | held locally, not in the manifest | n/a | Supplement 1 carries the per-patient clinical and genetic metadata (Table S1) needed to analyse the deposits. The publisher blocks automated retrieval, so it was obtained by hand and is recorded by checksum under "Manually obtained files", not by `DOWNLOAD.sh` |
+| In-house DIA-NN 2.3.1 library-free re-search of the 117 PXD022198 patient-sample runs | held locally, not in the manifest | n/a | A second, uniformly processed search output covering all three batches in one report, where the deposit has three separate per-batch Spectronaut reports. Not public and not fetchable, so it is recorded by checksum under "Internal provenance" |
 | DNA-seq, RNA-seq and ex vivo drug-response layers | no | n/a | Not part of either deposit. The article states they were generated previously and are distributed in the Bioconductor package `BloodCancerMultiOmics2017` |
 | Published analysis code and Rmarkdown workflows | no | n/a | Code, not data. URLs transcribed from the article's data-sharing statement and left UNVERIFIED |
 | PRIDE Aspera transfer endpoints | no | n/a | An alternative transport for the same bytes, not a separate source. `DOWNLOAD.sh` uses HTTPS only, so the manifest records only HTTPS URLs |
@@ -222,7 +260,9 @@ Files held in this directory that `DOWNLOAD.sh` cannot retrieve. They are not
 in `MANIFEST.tsv`, because the manifest lists only files the script can fetch
 and re-verify, and they are git-ignored like the deposit data. The checksum
 below is the only integrity record: compare a copy against it with
-`sha256sum supplementary-data/bloodbld2020009741-suppl1.pdf`.
+`sha256sum supplementary-data/bloodbld2020009741-suppl1.pdf`. The in-house
+DIA-NN search output, the other file held outside the manifest, is recorded
+under "Internal provenance".
 
 | Field | Value |
 | --- | --- |
