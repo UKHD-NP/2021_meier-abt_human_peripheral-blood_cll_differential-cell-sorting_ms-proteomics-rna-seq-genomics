@@ -45,13 +45,14 @@ jurisdiction or under your institution's rules.
 
 ## Internal provenance
 
-One in-house file is held alongside the deposits: a DIA-NN re-search of the
-PXD022198 patient-sample runs, made locally rather than by the study authors. It
-is not part of either deposit, the CC0 statement above does not cover it, and
-`DOWNLOAD.sh` cannot retrieve it. It is therefore not in `MANIFEST.tsv` — whose
-structural gate requires an https retrieval URL on every row — and is
-git-ignored like the deposit data. Its checksum below is a local pin, Tier C in
-the manifest's terms: it detects later change to this copy and says nothing
+Two in-house files are held alongside the deposits: a DIA-NN re-search of the
+PXD022198 patient-sample runs, made locally rather than by the study authors,
+and the protein database it was searched against. Neither is part of either
+deposit, the CC0 statement above does not cover them, and `DOWNLOAD.sh` cannot
+retrieve them. They are therefore not in `MANIFEST.tsv` — whose structural gate
+requires an https retrieval URL on every row — and are git-ignored like the
+deposit data. Their checksums below are local pins, Tier C in the manifest's
+terms: they detect later change to these copies and say nothing
 about origin. The search *inputs* are Tier A, since every run it quantifies is a
 pinned manifest row verified against its PRIDE SHA-1.
 
@@ -67,7 +68,7 @@ pinned manifest row verified against its PRIDE SHA-1.
 | Search parameters read from the output | `derived:` carbamidomethylation (`UniMod:4`) is the only modification present and sits on every cysteine (1 795 967 of 1 795 967), so it was fixed and no variable modification was reported; precursor charge 1–4; stripped peptide length 7–30; precursor *m/z* 399.5–1000.5; no decoy rows; `IM` is 0 throughout |
 | Filtering in the file | `derived:` precursors are filtered at run-specific `Q.Value` ≤ 0.01 and library `Lib.Q.Value` ≤ 0.01. Protein and gene groups are **not** filtered — `PG.Q.Value` and `GG.Q.Value` reach 1.0 and `Lib.PG.Q.Value` reaches 0.405 |
 | Normalisation | `derived:` enabled. `Precursor.Normalised` differs from `Precursor.Quantity` in all but 4 rows, with `Normalisation.Factor` between 0.066 and 4.04 |
-| Protein database | <FILL IN: FASTA file, source and release, contaminant handling> |
+| Protein database | `PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/uniprotkb_Human_AND_reviewed_true_AND_m_2025_01_16.fasta`, as stated by the operator; described in the next table. `derived:` consistent with the output — all 9 809 accessions in `Protein.Ids`, all 8 799 entry names in `Protein.Names` and all 8 785 gene symbols in `Genes` occur in it. That shows the database contained these identifiers, not that it contained nothing else |
 | Full search settings | <FILL IN: DIA-NN command line or log — mass accuracies, missed cleavages, MBR, protein inference, cross-run normalisation mode> |
 | Responsible person | Ian Dirk Fichtner, iandirk.fichtner@dkfz-heidelberg.de |
 | Originating group | <FILL IN: originating group> |
@@ -76,9 +77,21 @@ pinned manifest row verified against its PRIDE SHA-1.
 | Embargo status | <FILL IN: embargo status> |
 | Planned deposit target | <FILL IN: deposit target, if any> |
 
+The search database:
+
+| Field | Value |
+| --- | --- |
+| Path | `PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/uniprotkb_Human_AND_reviewed_true_AND_m_2025_01_16.fasta` |
+| What it is | `derived:` UniProtKB FASTA, ASCII, LF line endings, 20 421 entries, all `sp\|` (Swiss-Prot, reviewed) and all `OS=Homo sapiens OX=9606`. Canonical sequences only — no isoform accession (`-n` suffix) occurs. No contaminant or decoy entries. 126 entries carry no `GN=` gene name; 52 sequences occur in more than one entry; 36 residues are selenocysteine (`U`), the only letter outside the 20 standard amino acids |
+| Bytes | 13665520 |
+| sha256 | `7833f8a8acf4cf10c0f00bc89a9def522a24402b04c13478e0ae37f88a9d5b48` |
+| Pinned | 2026-10-20 |
+| Source | `derived:` UniProtKB, by the file's own header format (`>sp\|<accession>\|<entry name> … OS= OX= GN= PE= SV=`). The headers carry no release; the file name carries the date `2025_01_16` |
+| UniProt release and query | <FILL IN: UniProt release and the exact query used for the download> |
+
 The search output exists only as this copy unless another is recorded above. It
-can be regenerated from the 117 pinned raw runs once the protein database and
-search settings are filled in; until then it cannot.
+can be regenerated from the 117 pinned raw runs and the database above once the
+full search settings are filled in; until then it cannot.
 
 ## Sources considered and download depth
 
@@ -261,8 +274,8 @@ in `MANIFEST.tsv`, because the manifest lists only files the script can fetch
 and re-verify, and they are git-ignored like the deposit data. The checksum
 below is the only integrity record: compare a copy against it with
 `sha256sum supplementary-data/bloodbld2020009741-suppl1.pdf`. The in-house
-DIA-NN search output, the other file held outside the manifest, is recorded
-under "Internal provenance".
+DIA-NN search output and its FASTA, the other files held outside the manifest,
+are recorded under "Internal provenance".
 
 | Field | Value |
 | --- | --- |

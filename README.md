@@ -83,9 +83,12 @@ check it against the sha256 under "Manually obtained files" in PROVENANCE.md.
 in-house re-search of the 117 PXD022198 patient-sample runs with DIA-NN 2.3.1 in
 library-free mode: a single DIA-NN long-format report covering all three
 batches, where the deposit holds three per-batch Spectronaut reports. It is not
-part of either deposit and no script can fetch it. Its checksum, search inputs
-and the search settings readable from the output are under "Internal
-provenance" in PROVENANCE.md, and its statistics are below.
+part of either deposit and no script can fetch it. Beside it,
+`uniprotkb_Human_AND_reviewed_true_AND_m_2025_01_16.fasta` is the protein
+database it was searched against: 20 421 reviewed human UniProtKB/Swiss-Prot
+entries, canonical sequences only, no contaminants. Checksums of both, the
+search inputs and the search settings readable from the output are under
+"Internal provenance" in PROVENANCE.md, and the statistics are below.
 
 Files are grouped into three download depths. `./DOWNLOAD.sh` with no argument
 fetches `default`; pass `supplementary` or `raw` to go deeper. Depth is
@@ -154,6 +157,7 @@ subset of `DOWNLOAD.sh`'s (`--help`, `--list-flags`, `--dry-run`,
 
   PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/   in-house DIA-NN re-search — not in the manifest
     result.parquet                                                                         1 file   870.8 MiB
+    uniprotkb_Human_AND_reviewed_true_AND_m_2025_01_16.fasta                               1 file    13.0 MiB
 ```
 
 ## Data statistics
@@ -390,6 +394,47 @@ reports above: those split the cohort into three per-batch files, include runs
 that were never deposited, were searched against project-specific spectral
 libraries rather than library-free, and apply their own protein-level FDR.
 
+**The search FASTA**,
+`PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/uniprotkb_Human_AND_reviewed_true_AND_m_2025_01_16.fasta`,
+is a sequence database, not a matrix, so it gets counts only: 20 421 entries,
+all `sp|` with `OX=9606`, 20 421 distinct accessions with no isoform
+(`-n`) accession among them, 11 412 842 residues, 126 entries without `GN=`, 52
+sequences shared by more than one entry, and 36 selenocysteine (`U`) residues
+as the only non-standard letter. Every identifier in the re-search output occurs
+in it — 9 809 of 9 809 accessions in `Protein.Ids`, 8 799 of 8 799 entry names
+in `Protein.Names`, 8 785 of 8 785 gene symbols in `Genes`.
+
+```bash
+fa=PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/uniprotkb_Human_AND_reviewed_true_AND_m_2025_01_16.fasta
+grep -c '^>' "$fa"                                             # entries
+grep '^>' "$fa" | cut -d'|' -f1 | sort | uniq -c               # database prefix
+grep '^>' "$fa" | grep -o 'OX=[0-9]*' | sort | uniq -c         # taxon
+grep '^>' "$fa" | cut -d'|' -f2 | sort -u | wc -l              # distinct accessions
+grep '^>' "$fa" | cut -d'|' -f2 | grep -c -- '-'               # isoform accessions
+grep '^>' "$fa" | grep -vc ' GN='                              # entries without a gene name
+grep -v '^>' "$fa" | tr -d '\n' | wc -c                        # residues
+awk '/^>/{if(s!="")print s; s=""; next}{s=s $0}END{print s}' "$fa" | sort | uniq -d | wc -l   # shared sequences
+grep -v '^>' "$fa" | tr -d '\nACDEFGHIKLMNPQRSTVWY' | fold -w1 | sort | uniq -c             # non-standard letters
+
+duckdb <<'SQL'
+CREATE VIEW r AS FROM 'PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/result.parquet';
+CREATE TABLE fa AS
+  SELECT split_part(line, '|', 2) AS acc,
+         regexp_extract(line, '\|[^|]*\|(\S+)', 1) AS entry,
+         regexp_extract(line, ' GN=(\S+)', 1) AS gene
+  FROM read_csv('PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/uniprotkb_Human_AND_reviewed_true_AND_m_2025_01_16.fasta',
+                columns = {'line': 'VARCHAR'}, header = false, delim = '\t', quote = '', escape = '')
+  WHERE line LIKE '>%';
+WITH a AS (SELECT DISTINCT unnest(string_split("Protein.Ids", ';')) AS acc FROM r)
+SELECT count(*) AS report_accessions, count(fa.acc) AS found_in_fasta FROM a LEFT JOIN fa USING (acc);
+WITH n AS (SELECT DISTINCT unnest(string_split("Protein.Names", ';')) AS entry FROM r WHERE "Protein.Names" <> '')
+SELECT count(*) AS report_entry_names, count(fa.entry) AS found_in_fasta FROM n LEFT JOIN fa USING (entry);
+WITH g AS (SELECT DISTINCT unnest(string_split(Genes, ';')) AS gene FROM r WHERE Genes <> '')
+SELECT count(*) AS report_genes, count(f.gene) AS found_in_fasta
+FROM g LEFT JOIN (SELECT DISTINCT gene FROM fa WHERE gene <> '') f USING (gene);
+SQL
+```
+
 **Non-matrix files.** The two annotation files are sample tables, so they get row
 and column counts and nothing more. `PXD022216/Annotation_file_timsTOF.txt`:
 50 data rows x 14 columns, tab-separated. `PXD022198/Annotation_file.csv`: not
@@ -554,5 +599,5 @@ why. The data files themselves are not versioned — the manifest and
 | `TEST_DOWNLOAD.sh` | check that `DOWNLOAD.sh` and `DOWNLOAD_PATIENT_RUNS.sh` are correct and safe |
 | `.gitignore` | keeps the data files out of version control |
 | `supplementary-data/` | the article's Supplement 1 (patient metadata), obtained by hand; git-ignored, checksum in PROVENANCE.md |
-| `PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/` | in-house DIA-NN 2.3.1 library-free re-search of the 117 patient runs; git-ignored, checksum in PROVENANCE.md |
+| `PXD022198_diann-2-3-1_libfree_20261015_fichtnerID/` | in-house DIA-NN 2.3.1 library-free re-search of the 117 patient runs and the FASTA it searched; git-ignored, checksums in PROVENANCE.md |
 | `provenance/upstream/` | upstream checksum artifacts, saved verbatim as evidence |
